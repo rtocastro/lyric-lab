@@ -1,4 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import {
+    useCallback,
+    useEffect,
+    useRef,
+    useState,
+} from "react";
 import Panel from "../../components/Panel";
 import AudioWaveform from "./AudioWaveform";
 
@@ -94,6 +99,17 @@ function AudioPanel({ audioFile, onAudioChange }) {
         audioElement.currentTime = nextTime;
         setCurrentTime(nextTime);
     };
+
+    const handleWaveformSeek = useCallback((nextTime) => {
+        const audioElement = audioRef.current;
+
+        if (!audioElement || !Number.isFinite(nextTime)) {
+            return;
+        }
+
+        audioElement.currentTime = nextTime;
+        setCurrentTime(nextTime);
+    }, []);
 
     const handleRemoveAudio = () => {
         const audioElement = audioRef.current;
@@ -216,7 +232,12 @@ function AudioPanel({ audioFile, onAudioChange }) {
                             </div>
                         </div>
 
-                        <AudioWaveform audioUrl={audioUrl} />
+                        <AudioWaveform
+                            audioUrl={audioUrl}
+                            currentTime={currentTime}
+                            duration={duration}
+                            onSeek={handleWaveformSeek}
+                        />
                     </>
                 )}
 

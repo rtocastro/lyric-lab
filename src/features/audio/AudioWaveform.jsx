@@ -1,9 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import WaveSurfer from "wavesurfer.js";
 
-function AudioWaveform({ audioUrl }) {
+function AudioWaveform({
+  audioUrl,
+  currentTime,
+  duration,
+  onSeek,
+}) {
   const containerRef = useRef(null);
   const waveSurferRef = useRef(null);
+  const isSeekingFromWaveformRef = useRef(false);
 
   const [isReady, setIsReady] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -36,12 +42,22 @@ function AudioWaveform({ audioUrl }) {
       setIsReady(true);
     };
 
+    const handleInteraction = (newTime) => {
+      isSeekingFromWaveformRef.current = true;
+      onSeek(newTime);
+
+      window.requestAnimationFrame(() => {
+        isSeekingFromWaveformRef.current = false;
+      });
+    };
+
     const handleError = (error) => {
       console.error("Waveform loading failed:", error);
       setErrorMessage("The waveform could not be generated.");
     };
 
     waveSurfer.on("ready", handleReady);
+    waveSurfer.on("interaction", handleInteraction);
     waveSurfer.on("error", handleError);
 
     waveSurfer.load(audioUrl);
@@ -50,7 +66,29 @@ function AudioWaveform({ audioUrl }) {
       waveSurfer.destroy();
       waveSurferRef.current = null;
     };
-  }, [audioUrl]);
+  }, [audioUrl, onSeek]);
+
+  useEffect(() => {
+    const waveSurfer = waveSurferRef.current;
+
+    if (
+      !waveSurfer ||
+      !isReady ||
+      !Number.isFinite(currentTime) ||
+      !Number.isFinite(duration) ||
+      duration <= 0 ||
+      isSeekingFromWaveformRef.current
+    ) {
+      return;
+    }
+
+    const progress = Math.min(
+      Math.max(currentTime / duration, 0),
+      1
+    );
+
+    waveSurfer.seekTo(progress);
+  }, [currentTime, duration, isReady]);
 
   return (
     <section className="audio-waveform">
