@@ -1,226 +1,231 @@
 import { useEffect, useRef, useState } from "react";
 import Panel from "../../components/Panel";
+import AudioWaveform from "./AudioWaveform";
 
 function formatTime(seconds) {
-  if (!Number.isFinite(seconds)) {
-    return "00:00";
-  }
+    if (!Number.isFinite(seconds)) {
+        return "00:00";
+    }
 
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = Math.floor(seconds % 60);
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
 
-  return `${String(minutes).padStart(2, "0")}:${String(
-    remainingSeconds
-  ).padStart(2, "0")}`;
+    return `${String(minutes).padStart(2, "0")}:${String(
+        remainingSeconds
+    ).padStart(2, "0")}`;
 }
 
 function AudioPanel({ audioFile, onAudioChange }) {
-  const audioRef = useRef(null);
+    const audioRef = useRef(null);
 
-  const [audioUrl, setAudioUrl] = useState("");
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [errorMessage, setErrorMessage] = useState("");
+    const [audioUrl, setAudioUrl] = useState("");
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [currentTime, setCurrentTime] = useState(0);
+    const [duration, setDuration] = useState(0);
+    const [errorMessage, setErrorMessage] = useState("");
 
-  useEffect(() => {
-    if (!audioFile) {
-      setAudioUrl("");
-      setIsPlaying(false);
-      setCurrentTime(0);
-      setDuration(0);
-      return undefined;
-    }
+    useEffect(() => {
+        if (!audioFile) {
+            setAudioUrl("");
+            setIsPlaying(false);
+            setCurrentTime(0);
+            setDuration(0);
+            return undefined;
+        }
 
-    const objectUrl = URL.createObjectURL(audioFile);
+        const objectUrl = URL.createObjectURL(audioFile);
 
-    setAudioUrl(objectUrl);
-    setIsPlaying(false);
-    setCurrentTime(0);
-    setDuration(0);
+        setAudioUrl(objectUrl);
+        setIsPlaying(false);
+        setCurrentTime(0);
+        setDuration(0);
 
-    return () => {
-      URL.revokeObjectURL(objectUrl);
+        return () => {
+            URL.revokeObjectURL(objectUrl);
+        };
+    }, [audioFile]);
+
+    const handleFileChange = (event) => {
+        const selectedFile = event.target.files?.[0];
+
+        if (!selectedFile) {
+            return;
+        }
+
+        if (!selectedFile.type.startsWith("audio/")) {
+            setErrorMessage("Please choose a valid audio file.");
+            event.target.value = "";
+            return;
+        }
+
+        setErrorMessage("");
+        onAudioChange(selectedFile);
+
+        event.target.value = "";
     };
-  }, [audioFile]);
 
-  const handleFileChange = (event) => {
-    const selectedFile = event.target.files?.[0];
+    const handleTogglePlayback = async () => {
+        const audioElement = audioRef.current;
 
-    if (!selectedFile) {
-      return;
-    }
+        if (!audioElement) {
+            return;
+        }
 
-    if (!selectedFile.type.startsWith("audio/")) {
-      setErrorMessage("Please choose a valid audio file.");
-      event.target.value = "";
-      return;
-    }
+        try {
+            if (audioElement.paused) {
+                await audioElement.play();
+            } else {
+                audioElement.pause();
+            }
+        } catch (error) {
+            console.error("Audio playback failed:", error);
+            setErrorMessage("The browser could not play this audio file.");
+        }
+    };
 
-    setErrorMessage("");
-    onAudioChange(selectedFile);
+    const handleSeek = (event) => {
+        const audioElement = audioRef.current;
+        const nextTime = Number(event.target.value);
 
-    event.target.value = "";
-  };
+        if (!audioElement || !Number.isFinite(nextTime)) {
+            return;
+        }
 
-  const handleTogglePlayback = async () => {
-    const audioElement = audioRef.current;
+        audioElement.currentTime = nextTime;
+        setCurrentTime(nextTime);
+    };
 
-    if (!audioElement) {
-      return;
-    }
+    const handleRemoveAudio = () => {
+        const audioElement = audioRef.current;
 
-    try {
-      if (audioElement.paused) {
-        await audioElement.play();
-      } else {
-        audioElement.pause();
-      }
-    } catch (error) {
-      console.error("Audio playback failed:", error);
-      setErrorMessage("The browser could not play this audio file.");
-    }
-  };
+        if (audioElement) {
+            audioElement.pause();
+            audioElement.currentTime = 0;
+        }
 
-  const handleSeek = (event) => {
-    const audioElement = audioRef.current;
-    const nextTime = Number(event.target.value);
+        setErrorMessage("");
+        onAudioChange(null);
+    };
 
-    if (!audioElement || !Number.isFinite(nextTime)) {
-      return;
-    }
+    return (
+        <Panel title="Audio">
+            <div className="audio-panel">
+                {!audioFile ? (
+                    <label className="audio-dropzone">
+                        <input
+                            className="audio-dropzone__input"
+                            type="file"
+                            accept="audio/*,.mp3,.wav,.m4a,.ogg"
+                            onChange={handleFileChange}
+                        />
 
-    audioElement.currentTime = nextTime;
-    setCurrentTime(nextTime);
-  };
+                        <span className="audio-dropzone__icon">♪</span>
 
-  const handleRemoveAudio = () => {
-    const audioElement = audioRef.current;
+                        <strong>Import a song</strong>
 
-    if (audioElement) {
-      audioElement.pause();
-      audioElement.currentTime = 0;
-    }
+                        <span>
+                            Choose an MP3, WAV, M4A, or OGG file
+                        </span>
+                    </label>
+                ) : (
+                    <>
+                        {audioUrl && (
+                            <audio
+                                ref={audioRef}
+                                src={audioUrl}
+                                preload="metadata"
+                                onLoadedMetadata={(event) => {
+                                    setDuration(event.currentTarget.duration);
+                                }}
+                                onDurationChange={(event) => {
+                                    setDuration(event.currentTarget.duration);
+                                }}
+                                onTimeUpdate={(event) => {
+                                    setCurrentTime(event.currentTarget.currentTime);
+                                }}
+                                onPlay={() => {
+                                    setIsPlaying(true);
+                                }}
+                                onPause={() => {
+                                    setIsPlaying(false);
+                                }}
+                                onEnded={() => {
+                                    setIsPlaying(false);
+                                    setCurrentTime(0);
+                                }}
+                            />
+                        )}
 
-    setErrorMessage("");
-    onAudioChange(null);
-  };
+                        <div className="audio-file">
+                            <div className="audio-file__icon">♪</div>
 
-  return (
-    <Panel title="Audio">
-      <div className="audio-panel">
-        {!audioFile ? (
-          <label className="audio-dropzone">
-            <input
-              className="audio-dropzone__input"
-              type="file"
-              accept="audio/*,.mp3,.wav,.m4a,.ogg"
-              onChange={handleFileChange}
-            />
+                            <div className="audio-file__details">
+                                <strong>{audioFile.name}</strong>
 
-            <span className="audio-dropzone__icon">♪</span>
+                                <span>
+                                    {(audioFile.size / 1024 / 1024).toFixed(2)} MB
+                                </span>
+                            </div>
 
-            <strong>Import a song</strong>
+                            <label className="audio-file__replace">
+                                Replace
 
-            <span>
-              Choose an MP3, WAV, M4A, or OGG file
-            </span>
-          </label>
-        ) : (
-          <>
-            <audio
-              ref={audioRef}
-              src={audioUrl}
-              preload="metadata"
-              onLoadedMetadata={(event) => {
-                setDuration(event.currentTarget.duration);
-              }}
-              onDurationChange={(event) => {
-                setDuration(event.currentTarget.duration);
-              }}
-              onTimeUpdate={(event) => {
-                setCurrentTime(event.currentTarget.currentTime);
-              }}
-              onPlay={() => {
-                setIsPlaying(true);
-              }}
-              onPause={() => {
-                setIsPlaying(false);
-              }}
-              onEnded={() => {
-                setIsPlaying(false);
-                setCurrentTime(0);
-              }}
-            />
+                                <input
+                                    type="file"
+                                    accept="audio/*,.mp3,.wav,.m4a,.ogg"
+                                    onChange={handleFileChange}
+                                />
+                            </label>
 
-            <div className="audio-file">
-              <div className="audio-file__icon">♪</div>
+                            <button
+                                className="audio-file__remove"
+                                type="button"
+                                onClick={handleRemoveAudio}
+                            >
+                                Remove
+                            </button>
+                        </div>
 
-              <div className="audio-file__details">
-                <strong>{audioFile.name}</strong>
+                        <div className="audio-controls">
+                            <button
+                                className="audio-controls__play"
+                                type="button"
+                                onClick={handleTogglePlayback}
+                                aria-label={isPlaying ? "Pause song" : "Play song"}
+                            >
+                                {isPlaying ? "❚❚" : "▶"}
+                            </button>
 
-                <span>
-                  {(audioFile.size / 1024 / 1024).toFixed(2)} MB
-                </span>
-              </div>
+                            <div className="audio-controls__timeline">
+                                <input
+                                    className="audio-controls__range"
+                                    type="range"
+                                    min="0"
+                                    max={duration || 0}
+                                    step="0.01"
+                                    value={Math.min(currentTime, duration || 0)}
+                                    onChange={handleSeek}
+                                    disabled={!duration}
+                                    aria-label="Song position"
+                                />
 
-              <label className="audio-file__replace">
-                Replace
+                                <div className="audio-controls__time">
+                                    <span>{formatTime(currentTime)}</span>
+                                    <span>{formatTime(duration)}</span>
+                                </div>
+                            </div>
+                        </div>
 
-                <input
-                  type="file"
-                  accept="audio/*,.mp3,.wav,.m4a,.ogg"
-                  onChange={handleFileChange}
-                />
-              </label>
+                        <AudioWaveform audioUrl={audioUrl} />
+                    </>
+                )}
 
-              <button
-                className="audio-file__remove"
-                type="button"
-                onClick={handleRemoveAudio}
-              >
-                Remove
-              </button>
+                {errorMessage && (
+                    <p className="audio-panel__error">{errorMessage}</p>
+                )}
             </div>
-
-            <div className="audio-controls">
-              <button
-                className="audio-controls__play"
-                type="button"
-                onClick={handleTogglePlayback}
-                aria-label={isPlaying ? "Pause song" : "Play song"}
-              >
-                {isPlaying ? "❚❚" : "▶"}
-              </button>
-
-              <div className="audio-controls__timeline">
-                <input
-                  className="audio-controls__range"
-                  type="range"
-                  min="0"
-                  max={duration || 0}
-                  step="0.01"
-                  value={Math.min(currentTime, duration || 0)}
-                  onChange={handleSeek}
-                  disabled={!duration}
-                  aria-label="Song position"
-                />
-
-                <div className="audio-controls__time">
-                  <span>{formatTime(currentTime)}</span>
-                  <span>{formatTime(duration)}</span>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
-
-        {errorMessage && (
-          <p className="audio-panel__error">{errorMessage}</p>
-        )}
-      </div>
-    </Panel>
-  );
+        </Panel>
+    );
 }
 
 export default AudioPanel;
