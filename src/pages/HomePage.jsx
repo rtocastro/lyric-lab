@@ -1,6 +1,10 @@
 import Button from "../components/Button";
 
-function HomePage({ onCreateProject }) {
+function HomePage({
+  hasSavedProject,
+  onCreateProject,
+  onResumeProject,
+}) {
   return (
     <main className="home-page">
       <div className="home-page__glow" />
@@ -24,13 +28,19 @@ function HomePage({ onCreateProject }) {
             New Project
           </Button>
 
-          <Button variant="secondary" disabled>
-            Open Project
+          <Button
+            variant="secondary"
+            onClick={onResumeProject}
+            disabled={!hasSavedProject}
+          >
+            Resume Last Project
           </Button>
         </div>
 
         <p className="home-card__status">
-          Version 0.1 — Project foundation
+          {hasSavedProject
+            ? "Your latest project is saved locally"
+            : "Version 0.1 — Project foundation"}
         </p>
       </section>
     </main>

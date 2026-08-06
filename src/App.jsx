@@ -1,27 +1,173 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import HomePage from "./pages/HomePage";
 import EditorPage from "./pages/EditorPage";
+import {
+  hasSavedProject,
+  loadSavedProject,
+  saveProjectAudio,
+  saveProjectMetadata,
+} from "./utils/projectStorage";
 import "./App.css";
 
+function createNewProject() {
+  return {
+    id: crypto.randomUUID(),
+    title: "Untitled Project",
+    artist: "",
+    audioFile: null,
+    lyrics: [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+}
+
 function App() {
-  const [currentProject, setCurrentProject] = useState(null);
+  const [currentProject, setCurrentProject] =
+    useState(null);
+
+  const [isRestoringProject, setIsRestoringProject] =
+    useState(true);
+
+  const [savedProjectAvailable, setSavedProjectAvailable] =
+    useState(() => hasSavedProject());
+
+  const previousAudioFileRef = useRef(null);
+  const previousProjectIdRef = useRef(null);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    const restoreProject = async () => {
+      const savedProject = await loadSavedProject();
+
+      if (!isCancelled && savedProject) {
+        setCurrentProject(savedProject);
+
+        previousAudioFileRef.current =
+          savedProject.audioFile;
+
+        previousProjectIdRef.current =
+          savedProject.id;
+      }
+
+      if (!isCancelled) {
+        setIsRestoringProject(false);
+      }
+    };
+
+    restoreProject();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!currentProject || isRestoringProject) {
+      return;
+    }
+
+    saveProjectMetadata(currentProject);
+    setSavedProjectAvailable(true);
+  }, [currentProject, isRestoringProject]);
+
+  useEffect(() => {
+    if (!currentProject || isRestoringProject) {
+      return;
+    }
+
+    const audioFileChanged =
+      previousAudioFileRef.current !==
+      currentProject.audioFile;
+
+    const projectChanged =
+      previousProjectIdRef.current !==
+      currentProject.id;
+
+    if (!audioFileChanged && !projectChanged) {
+      return;
+    }
+
+    previousAudioFileRef.current =
+      currentProject.audioFile;
+
+    previousProjectIdRef.current =
+      currentProject.id;
+
+    saveProjectAudio(
+      currentProject.id,
+      currentProject.audioFile
+    ).catch((error) => {
+      console.error(
+        "Lyric Lab could not autosave the audio file:",
+        error
+      );
+    });
+  }, [
+    currentProject?.audioFile,
+    currentProject?.id,
+    isRestoringProject,
+  ]);
 
   const handleCreateProject = () => {
-    const newProject = {
-      id: crypto.randomUUID(),
-      title: "Untitled Project",
-      artist: "",
-      audioFile: null,
-      lyrics: [],
-      createdAt: new Date().toISOString(),
-    };
+    const newProject = createNewProject();
+
+    previousAudioFileRef.current = null;
+    previousProjectIdRef.current = newProject.id;
 
     setCurrentProject(newProject);
   };
 
+  const handleResumeProject = async () => {
+    setIsRestoringProject(true);
+
+    const savedProject = await loadSavedProject();
+
+    if (savedProject) {
+      previousAudioFileRef.current =
+        savedProject.audioFile;
+
+      previousProjectIdRef.current =
+        savedProject.id;
+
+      setCurrentProject(savedProject);
+    }
+
+    setIsRestoringProject(false);
+  };
+
   const handleReturnHome = () => {
     setCurrentProject(null);
+    setSavedProjectAvailable(hasSavedProject());
   };
+
+  if (isRestoringProject) {
+    return (
+      <div className="app">
+        <main className="home-page">
+          <div className="home-page__glow" />
+
+          <section className="home-card">
+            <div className="home-card__badge">
+              Project Storage
+            </div>
+
+            <h1 className="home-card__title">
+              Lyric Lab
+            </h1>
+
+            <p className="home-card__description">
+              Restoring your latest project…
+            </p>
+
+            <p className="home-card__status">
+              Loading lyrics, timestamps, and audio
+            </p>
+          </section>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="app">
@@ -32,7 +178,11 @@ function App() {
           onReturnHome={handleReturnHome}
         />
       ) : (
-        <HomePage onCreateProject={handleCreateProject} />
+        <HomePage
+          hasSavedProject={savedProjectAvailable}
+          onCreateProject={handleCreateProject}
+          onResumeProject={handleResumeProject}
+        />
       )}
     </div>
   );
