@@ -1357,3 +1357,127 @@ button {
     grid-column: 1 / -1;
   }
 }
+
+/* Live lyric preview */
+
+.preview__canvas {
+  isolation: isolate;
+}
+
+.preview__lyric-stage {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  width: 100%;
+  max-width: 86%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.preview__lyric-stage--active {
+  animation: preview-lyric-enter 280ms ease-out;
+}
+
+.preview__hud {
+  position: absolute;
+  right: 18px;
+  left: 18px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+}
+
+.preview__hud--top {
+  top: 16px;
+  justify-content: space-between;
+  color: rgba(245, 247, 250, 0.55);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.preview__hud--top strong {
+  color: var(--accent);
+  font-size: 0.65rem;
+}
+
+.preview__hud--bottom {
+  bottom: 16px;
+  display: grid;
+  grid-template-columns:
+    auto auto minmax(80px, 1fr);
+  gap: 12px;
+}
+
+.preview__play-button {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid rgba(85, 199, 255, 0.35);
+  border-radius: 50%;
+  color: #06131a;
+  background: var(--accent);
+  cursor: pointer;
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.preview__play-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.preview__time {
+  display: flex;
+  align-items: baseline;
+  min-width: 105px;
+  gap: 4px;
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.preview__time strong {
+  color: var(--text-primary);
+}
+
+.preview__time span {
+  color: rgba(245, 247, 250, 0.4);
+}
+
+.preview__progress {
+  position: relative;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.preview__progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: width 70ms linear;
+}
+
+@keyframes preview-lyric-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+    filter: blur(3px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}

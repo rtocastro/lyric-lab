@@ -1,9 +1,43 @@
-import { useCallback, useState } from "react";
+import {
+  useCallback,
+  useMemo,
+  useState,
+} from "react";
 import EditorLayout from "../components/EditorLayout";
 import Panel from "../components/Panel";
 import AudioPanel from "../features/audio/AudioPanel";
 import useAudioTransport from "../features/audio/useAudioTransport";
 import LyricPanel from "../features/lyrics/LyricPanel";
+import { getActiveLyric } from "../utils/getActiveLyric";
+
+function formatPreviewTime(seconds) {
+  if (!Number.isFinite(seconds)) {
+    return "00:00.00";
+  }
+
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+
+  return `${String(minutes).padStart(
+    2,
+    "0"
+  )}:${remainingSeconds
+    .toFixed(2)
+    .padStart(5, "0")}`;
+}
+
+function formatDuration(seconds) {
+  if (!Number.isFinite(seconds)) {
+    return "00:00";
+  }
+
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+
+  return `${String(minutes).padStart(2, "0")}:${String(
+    remainingSeconds
+  ).padStart(2, "0")}`;
+}
 
 function EditorPage({
   project,
@@ -15,6 +49,28 @@ function EditorPage({
 
   const audioTransport = useAudioTransport(
     project.audioFile
+  );
+
+  const activeLyric = useMemo(
+    () =>
+      getActiveLyric(
+        project.lyrics,
+        audioTransport.currentTime,
+        audioTransport.duration
+      ),
+    [
+      project.lyrics,
+      audioTransport.currentTime,
+      audioTransport.duration,
+    ]
+  );
+
+  const syncedLyricCount = useMemo(
+    () =>
+      project.lyrics.filter((lyric) =>
+        Number.isFinite(lyric.start)
+      ).length,
+    [project.lyrics]
   );
 
   const handleTitleChange = (event) => {
@@ -48,6 +104,104 @@ function EditorPage({
     [onProjectChange]
   );
 
+  const renderPreviewPanel = () => {
+    const previewText = activeLyric
+      ? activeLyric.text
+      : syncedLyricCount > 0
+        ? "Waiting for the next lyric..."
+        : project.lyrics.length > 0
+          ? "Synchronize your lyrics to begin"
+          : "Your lyrics will appear here";
+
+    return (
+      <Panel title="Live Preview">
+        <div className="preview">
+          <div className="preview__canvas">
+            <div className="preview__hud preview__hud--top">
+              <span>Live lyric preview</span>
+
+              <strong>
+                {audioTransport.isPlaying
+                  ? "Playing"
+                  : "Paused"}
+              </strong>
+            </div>
+
+            <div
+              className={[
+                "preview__lyric-stage",
+                activeLyric
+                  ? "preview__lyric-stage--active"
+                  : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              key={activeLyric?.id ?? "empty-preview"}
+            >
+              <span className="preview__eyebrow">
+                {activeLyric
+                  ? `Line ${activeLyric.order + 1}`
+                  : "Video Preview"}
+              </span>
+
+              <strong className="preview__lyric">
+                {previewText}
+              </strong>
+            </div>
+
+            <div className="preview__hud preview__hud--bottom">
+              <button
+                className="preview__play-button"
+                type="button"
+                onClick={audioTransport.togglePlayback}
+                disabled={!project.audioFile}
+                aria-label={
+                  audioTransport.isPlaying
+                    ? "Pause song"
+                    : "Play song"
+                }
+              >
+                {audioTransport.isPlaying ? "❚❚" : "▶"}
+              </button>
+
+              <div className="preview__time">
+                <strong>
+                  {formatPreviewTime(
+                    audioTransport.currentTime
+                  )}
+                </strong>
+
+                <span>
+                  /{" "}
+                  {formatDuration(
+                    audioTransport.duration
+                  )}
+                </span>
+              </div>
+
+              <div className="preview__progress">
+                <div
+                  className="preview__progress-fill"
+                  style={{
+                    width:
+                      audioTransport.duration > 0
+                        ? `${Math.min(
+                            (audioTransport.currentTime /
+                              audioTransport.duration) *
+                              100,
+                            100
+                          )}%`
+                        : "0%",
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </Panel>
+    );
+  };
+
   const renderActivePanel = () => {
     if (activeSection === "audio") {
       return (
@@ -59,10 +213,14 @@ function EditorPage({
           duration={audioTransport.duration}
           errorMessage={audioTransport.errorMessage}
           onAudioChange={handleAudioChange}
-          onTogglePlayback={audioTransport.togglePlayback}
+          onTogglePlayback={
+            audioTransport.togglePlayback
+          }
           onSeek={audioTransport.seek}
           onResetPlayback={audioTransport.reset}
-          onClearError={audioTransport.setErrorMessage}
+          onClearError={
+            audioTransport.setErrorMessage
+          }
         />
       );
     }
@@ -76,29 +234,15 @@ function EditorPage({
           isPlaying={audioTransport.isPlaying}
           hasAudio={Boolean(project.audioFile)}
           onLyricsChange={handleLyricsChange}
-          onTogglePlayback={audioTransport.togglePlayback}
+          onTogglePlayback={
+            audioTransport.togglePlayback
+          }
           onSeek={audioTransport.seek}
         />
       );
     }
 
-    return (
-      <Panel title="Preview">
-        <div className="preview">
-          <div className="preview__canvas">
-            <span className="preview__eyebrow">
-              Video Preview
-            </span>
-
-            <strong className="preview__lyric">
-              {project.lyrics.length > 0
-                ? project.lyrics[0].text
-                : "Your lyrics will appear here"}
-            </strong>
-          </div>
-        </div>
-      </Panel>
-    );
+    return renderPreviewPanel();
   };
 
   return (
@@ -170,12 +314,31 @@ function EditorPage({
             </div>
 
             <div className="project-summary">
+              <span>Synced</span>
+
+              <strong>
+                {syncedLyricCount} /{" "}
+                {project.lyrics.length}
+              </strong>
+            </div>
+
+            <div className="project-summary">
               <span>Playback</span>
 
               <strong>
                 {audioTransport.isPlaying
                   ? "Playing"
                   : "Paused"}
+              </strong>
+            </div>
+
+            <div className="project-summary">
+              <span>Current lyric</span>
+
+              <strong>
+                {activeLyric
+                  ? `Line ${activeLyric.order + 1}`
+                  : "None"}
               </strong>
             </div>
           </Panel>
@@ -204,13 +367,9 @@ function EditorPage({
               </div>
 
               <span>
-                {Math.floor(audioTransport.duration / 60)
-                  .toString()
-                  .padStart(2, "0")}
-                :
-                {Math.floor(audioTransport.duration % 60)
-                  .toString()
-                  .padStart(2, "0")}
+                {formatDuration(
+                  audioTransport.duration
+                )}
               </span>
             </div>
           </Panel>
