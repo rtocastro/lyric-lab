@@ -2,6 +2,7 @@ import { useState } from "react";
 import EditorLayout from "../components/EditorLayout";
 import Panel from "../components/Panel";
 import AudioPanel from "../features/audio/AudioPanel";
+import LyricPanel from "../features/lyrics/LyricPanel";
 
 function EditorPage({
   project,
@@ -32,12 +33,28 @@ function EditorPage({
     });
   };
 
+  const handleLyricsChange = (lyrics) => {
+    onProjectChange({
+      ...project,
+      lyrics,
+    });
+  };
+
   const renderActivePanel = () => {
     if (activeSection === "audio") {
       return (
         <AudioPanel
           audioFile={project.audioFile}
           onAudioChange={handleAudioChange}
+        />
+      );
+    }
+
+    if (activeSection === "lyrics") {
+      return (
+        <LyricPanel
+          lyrics={project.lyrics}
+          onLyricsChange={handleLyricsChange}
         />
       );
     }
@@ -51,7 +68,9 @@ function EditorPage({
             </span>
 
             <strong className="preview__lyric">
-              Your lyrics will appear here
+              {project.lyrics.length > 0
+                ? project.lyrics[0].text
+                : "Your lyrics will appear here"}
             </strong>
           </div>
         </div>
@@ -102,6 +121,7 @@ function EditorPage({
 
             <div className="project-summary">
               <span>Active section</span>
+
               <strong>{activeSection}</strong>
             </div>
 
@@ -111,6 +131,16 @@ function EditorPage({
               <strong>
                 {project.audioFile
                   ? project.audioFile.name
+                  : "Not imported"}
+              </strong>
+            </div>
+
+            <div className="project-summary">
+              <span>Lyrics</span>
+
+              <strong>
+                {project.lyrics.length > 0
+                  ? `${project.lyrics.length} lines`
                   : "Not imported"}
               </strong>
             </div>

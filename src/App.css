@@ -908,3 +908,370 @@ button {
   background: var(--surface-light);
   font-size: 0.75rem;
 }
+
+/* Lyrics */
+
+.lyric-panel {
+  height: 100%;
+  min-height: 400px;
+}
+
+.lyric-import,
+.lyric-workspace {
+  display: flex;
+  height: 100%;
+  min-height: 400px;
+  flex-direction: column;
+}
+
+.lyric-import__header,
+.lyric-workspace__toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 18px;
+}
+
+.lyric-import__eyebrow {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--accent);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.lyric-import h3,
+.lyric-workspace h3 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.lyric-import p {
+  margin: 7px 0 0;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.lyric-import__textarea {
+  width: 100%;
+  min-height: 280px;
+  flex: 1;
+  resize: vertical;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  outline: none;
+  color: var(--text-primary);
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 31px,
+      rgba(255, 255, 255, 0.035) 32px
+    ),
+    var(--surface-light);
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 32px;
+}
+
+.lyric-import__textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.lyric-import__textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.lyric-import__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 14px;
+}
+
+.lyric-import__footer > span {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.lyric-panel__error {
+  margin: 12px 0 0;
+  color: var(--danger);
+  font-size: 0.8rem;
+}
+
+.lyric-workspace__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lyric-workspace__clear {
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--text-muted);
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.lyric-workspace__clear:hover {
+  color: var(--danger);
+  background: rgba(255, 100, 124, 0.08);
+}
+
+.lyric-list {
+  display: grid;
+  min-height: 0;
+  flex: 1;
+  gap: 8px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.lyric-card {
+  display: grid;
+  grid-template-columns:
+    34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 70px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  color: var(--text-secondary);
+  background: var(--surface-light);
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease,
+    transform 150ms ease;
+}
+
+.lyric-card--active {
+  border-color: rgba(85, 199, 255, 0.5);
+  color: var(--text-primary);
+  background:
+    linear-gradient(
+      90deg,
+      var(--accent-soft),
+      transparent 60%
+    ),
+    var(--surface-light);
+  transform: translateX(3px);
+}
+
+.lyric-card--synced {
+  border-color: rgba(85, 199, 255, 0.2);
+}
+
+.lyric-card__status {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid var(--border-light);
+  border-radius: 50%;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+}
+
+.lyric-card--active .lyric-card__status {
+  border-color: var(--accent);
+  color: #06131a;
+  background: var(--accent);
+}
+
+.lyric-card--synced .lyric-card__status {
+  border-color: rgba(85, 199, 255, 0.35);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.lyric-card__content {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.lyric-card__content strong {
+  overflow-wrap: anywhere;
+  font-size: 0.92rem;
+}
+
+.lyric-card__number {
+  color: var(--text-muted);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.lyric-card__time {
+  color: var(--text-muted);
+  font-family: ui-monospace, SFMono-Regular, Consolas,
+    monospace;
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.lyric-workspace__hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin-top: 14px;
+  color: var(--text-muted);
+  font-size: 0.74rem;
+}
+
+.lyric-workspace__key {
+  padding: 4px 8px;
+  border: 1px solid var(--border-light);
+  border-bottom-width: 3px;
+  border-radius: 6px;
+  color: var(--text-primary);
+  background: var(--surface-light);
+  font-family: ui-monospace, SFMono-Regular, Consolas,
+    monospace;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+@media (max-width: 650px) {
+  .lyric-import__footer,
+  .lyric-workspace__toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .lyric-workspace__actions {
+    width: 100%;
+  }
+
+  .lyric-workspace__actions .button {
+    flex: 1;
+  }
+
+  .lyric-card {
+    grid-template-columns: 30px minmax(0, 1fr);
+  }
+
+  .lyric-card__time {
+    grid-column: 2;
+  }
+}
+
+/* Fix lyric panel scrolling */
+
+.editor-grid__main {
+  min-height: 0;
+}
+
+.editor-grid__main .panel {
+  min-height: 0;
+}
+
+.editor-grid__main .panel__content {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.lyric-panel,
+.lyric-workspace {
+  min-height: 0;
+  height: 100%;
+}
+
+.lyric-workspace {
+  overflow: hidden;
+}
+
+.lyric-list {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+/* Definitive editor and lyric scrolling fix */
+
+.editor {
+  height: 100vh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.editor__body {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.editor__workspace {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.editor-grid {
+  height: 100%;
+  min-height: 0;
+}
+
+.editor-grid__main {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.editor-grid__main > .panel {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.editor-grid__main > .panel > .panel__content {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.lyric-panel {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.lyric-workspace {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.lyric-list {
+  min-height: 0;
+  flex: 1 1 0;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
