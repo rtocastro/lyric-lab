@@ -1481,3 +1481,230 @@ button {
     filter: blur(0);
   }
 }
+
+/* Real lyric timeline */
+
+.lyric-timeline {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.lyric-timeline__ruler {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  padding: 0 8px 8px;
+  color: var(--text-muted);
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+  font-size: 0.65rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.lyric-timeline__ruler span:nth-child(1) {
+  text-align: left;
+}
+
+.lyric-timeline__ruler span:nth-child(2),
+.lyric-timeline__ruler span:nth-child(3),
+.lyric-timeline__ruler span:nth-child(4) {
+  text-align: center;
+}
+
+.lyric-timeline__ruler span:nth-child(5) {
+  text-align: right;
+}
+
+.lyric-timeline__viewport {
+  position: relative;
+  min-height: 106px;
+  flex: 1;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(85, 199, 255, 0.025),
+      transparent
+    ),
+    var(--surface-light);
+}
+
+.lyric-timeline__grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.lyric-timeline__grid::before,
+.lyric-timeline__grid::after,
+.lyric-timeline__guide {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.055);
+  content: "";
+}
+
+.lyric-timeline__grid::before {
+  left: 0;
+}
+
+.lyric-timeline__grid::after {
+  right: 0;
+}
+
+.lyric-timeline__guide--25 {
+  left: 25%;
+}
+
+.lyric-timeline__guide--50 {
+  left: 50%;
+}
+
+.lyric-timeline__guide--75 {
+  left: 75%;
+}
+
+.lyric-timeline__track {
+  position: absolute;
+  inset: 14px 8px;
+}
+
+.lyric-timeline__clip {
+  position: absolute;
+  top: 0;
+  display: flex;
+  height: 54px;
+  min-width: 5px;
+  align-items: center;
+  overflow: hidden;
+  padding: 0 8px;
+  border: 1px solid rgba(85, 199, 255, 0.25);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(85, 199, 255, 0.16),
+      rgba(85, 199, 255, 0.055)
+    ),
+    var(--surface);
+  cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    background-color 140ms ease,
+    transform 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.lyric-timeline__clip:hover {
+  z-index: 3;
+  border-color: var(--accent);
+  color: var(--text-primary);
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.32);
+}
+
+.lyric-timeline__clip--active {
+  z-index: 2;
+  border-color: var(--accent);
+  color: #06131a;
+  background: var(--accent);
+  box-shadow:
+    0 0 0 2px rgba(85, 199, 255, 0.13),
+    0 8px 22px rgba(0, 0, 0, 0.28);
+}
+
+.lyric-timeline__clip span {
+  display: block;
+  overflow: hidden;
+  width: 100%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.lyric-timeline__playhead {
+  position: absolute;
+  z-index: 5;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #ffffff;
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+
+.lyric-timeline__playhead-handle {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 0 0 5px 5px;
+  background: #ffffff;
+  transform: translateX(-50%);
+}
+
+.lyric-timeline__empty {
+  display: grid;
+  position: absolute;
+  inset: 0;
+  place-items: center;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.lyric-timeline__status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 8px;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+}
+
+.lyric-timeline__status strong {
+  color: var(--accent);
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.lyric-timeline__clip--provisional {
+  border-style: dashed;
+  color: var(--text-primary);
+  background:
+    repeating-linear-gradient(
+      135deg,
+      rgba(85, 199, 255, 0.18) 0,
+      rgba(85, 199, 255, 0.18) 8px,
+      rgba(85, 199, 255, 0.07) 8px,
+      rgba(85, 199, 255, 0.07) 16px
+    ),
+    var(--surface);
+}
+
+.lyric-timeline__clip--provisional::after {
+  position: absolute;
+  top: 4px;
+  right: 5px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  content: "";
+  box-shadow: 0 0 8px var(--accent);
+}

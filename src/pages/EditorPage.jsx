@@ -8,6 +8,7 @@ import Panel from "../components/Panel";
 import AudioPanel from "../features/audio/AudioPanel";
 import useAudioTransport from "../features/audio/useAudioTransport";
 import LyricPanel from "../features/lyrics/LyricPanel";
+import LyricTimeline from "../features/timeline/LyricTimeline";
 import { getActiveLyric } from "../utils/getActiveLyric";
 
 function formatPreviewTime(seconds) {
@@ -344,36 +345,15 @@ function EditorPage({
           </Panel>
         </aside>
 
-        <section className="editor-grid__timeline">
-          <Panel title="Timeline">
-            <div className="timeline-placeholder">
-              <span>00:00</span>
-
-              <div className="timeline-placeholder__track">
-                <div
-                  className="timeline-placeholder__playhead"
-                  style={{
-                    left:
-                      audioTransport.duration > 0
-                        ? `${Math.min(
-                            (audioTransport.currentTime /
-                              audioTransport.duration) *
-                              100,
-                            100
-                          )}%`
-                        : "0%",
-                  }}
-                />
-              </div>
-
-              <span>
-                {formatDuration(
-                  audioTransport.duration
-                )}
-              </span>
-            </div>
-          </Panel>
-        </section>
+<section className="editor-grid__timeline">
+  <LyricTimeline
+    lyrics={project.lyrics}
+    currentTime={audioTransport.currentTime}
+    duration={audioTransport.duration}
+    activeLyricId={activeLyric?.id ?? null}
+    onSeek={audioTransport.seek}
+  />
+</section>
       </div>
     </EditorLayout>
   );
