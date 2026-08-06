@@ -488,135 +488,135 @@ function EditorPage({
                                     : "None"}
                             </strong>
                         </div>
-                                  {selectedLyric && (
-  <div className="timing-inspector">
-    <div className="timing-inspector__header">
-      <span>Selected lyric</span>
+                        {selectedLyric && (
+                            <div className="timing-inspector">
+                                <div className="timing-inspector__header">
+                                    <span>Selected lyric</span>
 
-      <strong>
-        Line {selectedLyric.order + 1}
-      </strong>
-    </div>
+                                    <strong>
+                                        Line {selectedLyric.order + 1}
+                                    </strong>
+                                </div>
 
-    <p className="timing-inspector__text">
-      {selectedLyric.text}
-    </p>
+                                <p className="timing-inspector__text">
+                                    {selectedLyric.text}
+                                </p>
 
-    <div className="timing-inspector__group">
-      <span>Start time</span>
+                                <div className="timing-inspector__group">
+                                    <span>Start time</span>
 
-      <strong>
-        {Number.isFinite(selectedLyric.start)
-          ? selectedLyric.start.toFixed(2)
-          : "--"}
-        s
-      </strong>
+                                    <strong>
+                                        {Number.isFinite(selectedLyric.start)
+                                            ? selectedLyric.start.toFixed(2)
+                                            : "--"}
+                                        s
+                                    </strong>
 
-      <div className="timing-inspector__buttons">
-        <button
-          type="button"
-          onClick={() =>
-            handleLyricTimingChange(
-              selectedLyric.id,
-              {
-                start:
-                  selectedLyric.start - 0.05,
-              }
-            )
-          }
-        >
-          −0.05
-        </button>
+                                    <div className="timing-inspector__buttons">
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                handleLyricTimingChange(
+                                                    selectedLyric.id,
+                                                    {
+                                                        start:
+                                                            selectedLyric.start - 0.05,
+                                                    }
+                                                )
+                                            }
+                                        >
+                                            −0.05
+                                        </button>
 
-        <button
-          type="button"
-          onClick={() =>
-            handleLyricTimingChange(
-              selectedLyric.id,
-              {
-                start:
-                  selectedLyric.start + 0.05,
-              }
-            )
-          }
-        >
-          +0.05
-        </button>
-      </div>
-    </div>
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                handleLyricTimingChange(
+                                                    selectedLyric.id,
+                                                    {
+                                                        start:
+                                                            selectedLyric.start + 0.05,
+                                                    }
+                                                )
+                                            }
+                                        >
+                                            +0.05
+                                        </button>
+                                    </div>
+                                </div>
 
-    <div className="timing-inspector__group">
-      <span>End time</span>
+                                <div className="timing-inspector__group">
+                                    <span>End time</span>
 
-      <strong>
-        {Number.isFinite(selectedLyric.end)
-          ? `${selectedLyric.end.toFixed(2)}s`
-          : "Automatic"}
-      </strong>
+                                    <strong>
+                                        {Number.isFinite(selectedLyric.end)
+                                            ? `${selectedLyric.end.toFixed(2)}s`
+                                            : "Automatic"}
+                                    </strong>
 
-      <div className="timing-inspector__buttons">
-        <button
-          type="button"
-          onClick={() => {
-            const currentEnd =
-              Number.isFinite(selectedLyric.end)
-                ? selectedLyric.end
-                : selectedLyric.start + 2;
+                                    <div className="timing-inspector__buttons">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                const currentEnd =
+                                                    Number.isFinite(selectedLyric.end)
+                                                        ? selectedLyric.end
+                                                        : selectedLyric.start + 2;
 
-            handleLyricTimingChange(
-              selectedLyric.id,
-              {
-                end: currentEnd - 0.05,
-              }
-            );
-          }}
-        >
-          −0.05
-        </button>
+                                                handleLyricTimingChange(
+                                                    selectedLyric.id,
+                                                    {
+                                                        end: currentEnd - 0.05,
+                                                    }
+                                                );
+                                            }}
+                                        >
+                                            −0.05
+                                        </button>
 
-        <button
-          type="button"
-          onClick={() => {
-            const currentEnd =
-              Number.isFinite(selectedLyric.end)
-                ? selectedLyric.end
-                : selectedLyric.start + 2;
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                const currentEnd =
+                                                    Number.isFinite(selectedLyric.end)
+                                                        ? selectedLyric.end
+                                                        : selectedLyric.start + 2;
 
-            handleLyricTimingChange(
-              selectedLyric.id,
-              {
-                end: currentEnd + 0.05,
-              }
-            );
-          }}
-        >
-          +0.05
-        </button>
-      </div>
-    </div>
+                                                handleLyricTimingChange(
+                                                    selectedLyric.id,
+                                                    {
+                                                        end: currentEnd + 0.05,
+                                                    }
+                                                );
+                                            }}
+                                        >
+                                            +0.05
+                                        </button>
+                                    </div>
+                                </div>
 
-    <div className="timing-inspector__actions">
-      <button
-        type="button"
-        onClick={() => {
-          audioTransport.seek(
-            selectedLyric.start
-          );
-        }}
-      >
-        Go to Start
-      </button>
+                                <div className="timing-inspector__actions">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            audioTransport.seek(
+                                                selectedLyric.start
+                                            );
+                                        }}
+                                    >
+                                        Go to Start
+                                    </button>
 
-      <button
-        type="button"
-        className="timing-inspector__reset"
-        onClick={handleResetSelectedLyric}
-      >
-        Reset Clip
-      </button>
-    </div>
-  </div>
-)}
+                                    <button
+                                        type="button"
+                                        className="timing-inspector__reset"
+                                        onClick={handleResetSelectedLyric}
+                                    >
+                                        Reset Clip
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </Panel>
                 </aside>
 
@@ -629,6 +629,7 @@ function EditorPage({
                         selectedLyricId={selectedLyricId}
                         onSeek={audioTransport.seek}
                         onSelectLyric={setSelectedLyricId}
+                        onTimingChange={handleLyricTimingChange}
                     />
                 </section>
             </div>

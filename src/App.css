@@ -1848,3 +1848,64 @@ button {
 .editor-grid__inspector .panel__content::-webkit-scrollbar-track {
   background: transparent;
 }
+
+/* Draggable timeline handles */
+
+.lyric-timeline__clip {
+  user-select: none;
+}
+
+.lyric-timeline__clip-label {
+  display: block;
+  overflow: hidden;
+  width: 100%;
+  padding: 0 3px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.lyric-timeline__resize-handle {
+  position: absolute;
+  z-index: 8;
+  top: 0;
+  bottom: 0;
+  width: 10px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.82);
+  cursor: ew-resize;
+  touch-action: none;
+  opacity: 0.82;
+}
+
+.lyric-timeline__resize-handle:hover {
+  background: #ffffff;
+  opacity: 1;
+}
+
+.lyric-timeline__resize-handle--start {
+  left: -2px;
+  border-radius: 5px 0 0 5px;
+}
+
+.lyric-timeline__resize-handle--end {
+  right: -2px;
+  border-radius: 0 5px 5px 0;
+}
+
+.lyric-timeline__clip--dragging {
+  z-index: 10;
+  opacity: 0.92;
+  box-shadow:
+    0 0 0 3px rgba(85, 199, 255, 0.18),
+    0 10px 28px rgba(0, 0, 0, 0.4);
+}
+
+.lyric-timeline__clip--dragging,
+.lyric-timeline__clip--dragging * {
+  cursor: ew-resize !important;
+}
