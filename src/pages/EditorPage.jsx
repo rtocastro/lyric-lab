@@ -251,6 +251,107 @@ function EditorPage({
         setSelectedLyricId(null);
     }, [onProjectChange, selectedLyric]);
 
+    useEffect(() => {
+        const handleTimelineKeyDown = (event) => {
+            const target = event.target;
+
+            const isTyping =
+                target instanceof HTMLInputElement ||
+                target instanceof HTMLTextAreaElement ||
+                target instanceof HTMLSelectElement ||
+                target?.isContentEditable;
+
+            if (isTyping || !selectedLyric) {
+                return;
+            }
+
+            const isArrowKey =
+                event.key === "ArrowLeft" ||
+                event.key === "ArrowRight";
+
+            if (isArrowKey) {
+                if (!Number.isFinite(selectedLyric.start)) {
+                    return;
+                }
+
+                event.preventDefault();
+
+                const direction =
+                    event.key === "ArrowLeft" ? -1 : 1;
+
+                const step = event.shiftKey ? 0.05 : 0.01;
+
+                if (event.altKey) {
+                    const currentEnd = Number.isFinite(
+                        selectedLyric.end
+                    )
+                        ? selectedLyric.end
+                        : selectedLyric.start + 2;
+
+                    handleLyricTimingChange(
+                        selectedLyric.id,
+                        {
+                            end:
+                                currentEnd +
+                                direction * step,
+                        }
+                    );
+
+                    return;
+                }
+
+                handleLyricTimingChange(
+                    selectedLyric.id,
+                    {
+                        start:
+                            selectedLyric.start +
+                            direction * step,
+                    }
+                );
+
+                return;
+            }
+
+            if (event.key === "Enter") {
+                if (!Number.isFinite(selectedLyric.start)) {
+                    return;
+                }
+
+                event.preventDefault();
+                audioTransport.seek(selectedLyric.start);
+                return;
+            }
+
+            if (event.key === "Delete") {
+                event.preventDefault();
+                handleResetSelectedLyric();
+                return;
+            }
+
+            if (event.key === "Escape") {
+                event.preventDefault();
+                setSelectedLyricId(null);
+            }
+        };
+
+        window.addEventListener(
+            "keydown",
+            handleTimelineKeyDown
+        );
+
+        return () => {
+            window.removeEventListener(
+                "keydown",
+                handleTimelineKeyDown
+            );
+        };
+    }, [
+        selectedLyric,
+        handleLyricTimingChange,
+        handleResetSelectedLyric,
+        audioTransport.seek,
+    ]);
+
     const renderPreviewPanel = () => {
         const previewText = activeLyric
             ? activeLyric.text
@@ -612,8 +713,68 @@ function EditorPage({
                                         className="timing-inspector__reset"
                                         onClick={handleResetSelectedLyric}
                                     >
-                                        Reset Clip
+                                        Unsync Clip
                                     </button>
+                                </div>
+                                <div className="timing-inspector__shortcuts">
+                                    <span className="timing-inspector__shortcut-title">
+                                        Keyboard controls
+                                    </span>
+
+                                    <div className="timing-inspector__shortcut">
+                                        <div>
+                                            <kbd>←</kbd>
+                                            <kbd>→</kbd>
+                                        </div>
+
+                                        <span>Nudge start by 0.01s</span>
+                                    </div>
+
+                                    <div className="timing-inspector__shortcut">
+                                        <div>
+                                            <kbd>Shift</kbd>
+                                            <span>+</span>
+                                            <kbd>←</kbd>
+                                            <kbd>→</kbd>
+                                        </div>
+
+                                        <span>Nudge start by 0.05s</span>
+                                    </div>
+
+                                    <div className="timing-inspector__shortcut">
+                                        <div>
+                                            <kbd>Alt</kbd>
+                                            <span>+</span>
+                                            <kbd>←</kbd>
+                                            <kbd>→</kbd>
+                                        </div>
+
+                                        <span>Adjust end time</span>
+                                    </div>
+
+                                    <div className="timing-inspector__shortcut">
+                                        <div>
+                                            <kbd>Enter</kbd>
+                                        </div>
+
+                                        <span>Go to lyric start</span>
+                                    </div>
+
+                                    <div className="timing-inspector__shortcut">
+                                        <div>
+                                            <kbd>Delete</kbd>
+                                        </div>
+
+                                        <span>Reset clip timing</span>
+                                    </div>
+
+                                    <div className="timing-inspector__shortcut">
+                                        <div>
+                                            <kbd>Esc</kbd>
+                                        </div>
+
+                                        <span>Deselect clip</span>
+                                    </div>
                                 </div>
                             </div>
                         )}

@@ -1909,3 +1909,64 @@ button {
 .lyric-timeline__clip--dragging * {
   cursor: ew-resize !important;
 }
+
+/* Timeline keyboard shortcuts */
+
+.timing-inspector__shortcuts {
+  display: grid;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.timing-inspector__shortcut-title {
+  margin-bottom: 2px;
+  color: var(--text-muted);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.timing-inspector__shortcut {
+  display: grid;
+  grid-template-columns:
+    minmax(105px, auto)
+    minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  color: var(--text-muted);
+  font-size: 0.67rem;
+}
+
+.timing-inspector__shortcut > div {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.timing-inspector__shortcut kbd {
+  display: inline-grid;
+  min-width: 25px;
+  min-height: 24px;
+  place-items: center;
+  padding: 2px 6px;
+  border: 1px solid var(--border-light);
+  border-bottom-width: 3px;
+  border-radius: 5px;
+  color: var(--text-primary);
+  background: var(--surface-light);
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+  font-size: 0.62rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.timing-inspector__shortcut > div > span {
+  color: var(--text-muted);
+  font-size: 0.6rem;
+}
