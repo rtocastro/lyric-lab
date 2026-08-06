@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import EditorLayout from "../components/EditorLayout";
 import Panel from "../components/Panel";
 import AudioPanel from "../features/audio/AudioPanel";
+import useAudioTransport from "../features/audio/useAudioTransport";
 import LyricPanel from "../features/lyrics/LyricPanel";
 
 function EditorPage({
@@ -11,6 +12,10 @@ function EditorPage({
 }) {
   const [activeSection, setActiveSection] =
     useState("project");
+
+  const audioTransport = useAudioTransport(
+    project.audioFile
+  );
 
   const handleTitleChange = (event) => {
     onProjectChange({
@@ -33,19 +38,31 @@ function EditorPage({
     });
   };
 
-  const handleLyricsChange = (lyrics) => {
-    onProjectChange({
-      ...project,
-      lyrics,
-    });
-  };
+  const handleLyricsChange = useCallback(
+    (lyrics) => {
+      onProjectChange((currentProject) => ({
+        ...currentProject,
+        lyrics,
+      }));
+    },
+    [onProjectChange]
+  );
 
   const renderActivePanel = () => {
     if (activeSection === "audio") {
       return (
         <AudioPanel
           audioFile={project.audioFile}
+          audioUrl={audioTransport.audioUrl}
+          isPlaying={audioTransport.isPlaying}
+          currentTime={audioTransport.currentTime}
+          duration={audioTransport.duration}
+          errorMessage={audioTransport.errorMessage}
           onAudioChange={handleAudioChange}
+          onTogglePlayback={audioTransport.togglePlayback}
+          onSeek={audioTransport.seek}
+          onResetPlayback={audioTransport.reset}
+          onClearError={audioTransport.setErrorMessage}
         />
       );
     }
@@ -54,7 +71,13 @@ function EditorPage({
       return (
         <LyricPanel
           lyrics={project.lyrics}
+          currentTime={audioTransport.currentTime}
+          duration={audioTransport.duration}
+          isPlaying={audioTransport.isPlaying}
+          hasAudio={Boolean(project.audioFile)}
           onLyricsChange={handleLyricsChange}
+          onTogglePlayback={audioTransport.togglePlayback}
+          onSeek={audioTransport.seek}
         />
       );
     }
@@ -85,6 +108,8 @@ function EditorPage({
       onSectionChange={setActiveSection}
       onReturnHome={onReturnHome}
     >
+      {audioTransport.audioElement}
+
       <div className="editor-grid">
         <section className="editor-grid__main">
           {renderActivePanel()}
@@ -121,7 +146,6 @@ function EditorPage({
 
             <div className="project-summary">
               <span>Active section</span>
-
               <strong>{activeSection}</strong>
             </div>
 
@@ -144,6 +168,16 @@ function EditorPage({
                   : "Not imported"}
               </strong>
             </div>
+
+            <div className="project-summary">
+              <span>Playback</span>
+
+              <strong>
+                {audioTransport.isPlaying
+                  ? "Playing"
+                  : "Paused"}
+              </strong>
+            </div>
           </Panel>
         </aside>
 
@@ -153,10 +187,31 @@ function EditorPage({
               <span>00:00</span>
 
               <div className="timeline-placeholder__track">
-                <div className="timeline-placeholder__playhead" />
+                <div
+                  className="timeline-placeholder__playhead"
+                  style={{
+                    left:
+                      audioTransport.duration > 0
+                        ? `${Math.min(
+                            (audioTransport.currentTime /
+                              audioTransport.duration) *
+                              100,
+                            100
+                          )}%`
+                        : "0%",
+                  }}
+                />
               </div>
 
-              <span>00:00</span>
+              <span>
+                {Math.floor(audioTransport.duration / 60)
+                  .toString()
+                  .padStart(2, "0")}
+                :
+                {Math.floor(audioTransport.duration % 60)
+                  .toString()
+                  .padStart(2, "0")}
+              </span>
             </div>
           </Panel>
         </section>

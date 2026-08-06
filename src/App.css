@@ -1275,3 +1275,85 @@ button {
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
 }
+
+/* Lyric synchronization controls */
+
+.lyric-sync-status {
+  display: grid;
+  grid-template-columns: auto auto minmax(120px, 1fr);
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface-light);
+}
+
+.lyric-sync-status__play {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  color: #06131a;
+  background: var(--accent);
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.lyric-sync-status__play:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.lyric-sync-status > div:nth-child(2) {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.lyric-sync-status > div:nth-child(2) span {
+  color: var(--text-muted);
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.lyric-sync-status > div:nth-child(2) strong {
+  color: var(--accent);
+  font-family: ui-monospace, SFMono-Regular, Consolas,
+    monospace;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.lyric-sync-status__progress {
+  position: relative;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--border);
+}
+
+.lyric-sync-status__progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: width 70ms linear;
+}
+
+@media (max-width: 800px) {
+  .lyric-workspace__actions {
+    flex-wrap: wrap;
+  }
+
+  .lyric-sync-status {
+    grid-template-columns: auto 1fr;
+  }
+
+  .lyric-sync-status__progress {
+    grid-column: 1 / -1;
+  }
+}
