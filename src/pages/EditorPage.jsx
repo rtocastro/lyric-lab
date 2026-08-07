@@ -50,7 +50,10 @@ function EditorPage({
     const [activeSection, setActiveSection] =
         useState("project");
 
-    const [selectedLyricId, setSelectedLyricId] =
+    const [selectedLyricIds, setSelectedLyricIds] =
+        useState([]);
+
+    const [selectionAnchorId, setSelectionAnchorId] =
         useState(null);
 
     const audioTransport = useAudioTransport(
@@ -71,12 +74,26 @@ function EditorPage({
         ]
     );
 
+    const primarySelectedLyricId =
+        selectedLyricIds.length > 0
+            ? selectedLyricIds[selectedLyricIds.length - 1]
+            : null;
+
+    const selectedLyrics = useMemo(
+        () =>
+            project.lyrics.filter((lyric) =>
+                selectedLyricIds.includes(lyric.id)
+            ),
+        [project.lyrics, selectedLyricIds]
+    );
+
     const selectedLyric = useMemo(
         () =>
             project.lyrics.find(
-                (lyric) => lyric.id === selectedLyricId
+                (lyric) =>
+                    lyric.id === primarySelectedLyricId
             ) ?? null,
-        [project.lyrics, selectedLyricId]
+        [project.lyrics, primarySelectedLyricId]
     );
 
     const syncedLyricCount = useMemo(
@@ -88,15 +105,23 @@ function EditorPage({
     );
 
     useEffect(() => {
+        setSelectedLyricIds((currentIds) =>
+            currentIds.filter((id) =>
+                project.lyrics.some(
+                    (lyric) => lyric.id === id
+                )
+            )
+        );
+
         if (
-            selectedLyricId &&
+            selectionAnchorId &&
             !project.lyrics.some(
-                (lyric) => lyric.id === selectedLyricId
+                (lyric) => lyric.id === selectionAnchorId
             )
         ) {
-            setSelectedLyricId(null);
+            setSelectionAnchorId(null);
         }
-    }, [project.lyrics, selectedLyricId]);
+    }, [project.lyrics, selectionAnchorId]);
 
     const handleTitleChange = (event) => {
         onProjectChange({
@@ -127,6 +152,74 @@ function EditorPage({
             }));
         },
         [onProjectChange]
+    );
+
+    const handleSelectLyric = useCallback(
+        (
+            lyricId,
+            {
+                toggle = false,
+                range = false,
+            } = {}
+        ) => {
+            const syncedLyricIds = project.lyrics
+                .filter((lyric) =>
+                    Number.isFinite(lyric.start)
+                )
+                .map((lyric) => lyric.id);
+
+            if (range && selectionAnchorId) {
+                const anchorIndex =
+                    syncedLyricIds.indexOf(
+                        selectionAnchorId
+                    );
+
+                const clickedIndex =
+                    syncedLyricIds.indexOf(lyricId);
+
+                if (
+                    anchorIndex !== -1 &&
+                    clickedIndex !== -1
+                ) {
+                    const rangeStart = Math.min(
+                        anchorIndex,
+                        clickedIndex
+                    );
+
+                    const rangeEnd = Math.max(
+                        anchorIndex,
+                        clickedIndex
+                    );
+
+                    const rangeIds = syncedLyricIds.slice(
+                        rangeStart,
+                        rangeEnd + 1
+                    );
+
+                    setSelectedLyricIds(rangeIds);
+                    return;
+                }
+            }
+
+            if (toggle) {
+                setSelectedLyricIds((currentIds) => {
+                    if (currentIds.includes(lyricId)) {
+                        return currentIds.filter(
+                            (id) => id !== lyricId
+                        );
+                    }
+
+                    return [...currentIds, lyricId];
+                });
+
+                setSelectionAnchorId(lyricId);
+                return;
+            }
+
+            setSelectedLyricIds([lyricId]);
+            setSelectionAnchorId(lyricId);
+        },
+        [project.lyrics, selectionAnchorId]
     );
 
     const handleLyricTimingChange = useCallback(
@@ -248,8 +341,20 @@ function EditorPage({
             ),
         }));
 
-        setSelectedLyricId(null);
-    }, [onProjectChange, selectedLyric]);
+        setSelectedLyricIds((currentIds) =>
+            currentIds.filter(
+                (id) => id !== selectedLyric.id
+            )
+        );
+
+        if (selectionAnchorId === selectedLyric.id) {
+            setSelectionAnchorId(null);
+        }
+    }, [
+        onProjectChange,
+        selectedLyric,
+        selectionAnchorId,
+    ]);
 
     useEffect(() => {
         const handleTimelineKeyDown = (event) => {
@@ -261,7 +366,43 @@ function EditorPage({
                 target instanceof HTMLSelectElement ||
                 target?.isContentEditable;
 
-            if (isTyping || !selectedLyric) {
+            if (isTyping) {
+                return;
+            }
+
+            if (
+                (event.ctrlKey || event.metaKey) &&
+                event.key.toLowerCase() === "a"
+            ) {
+                event.preventDefault();
+
+                const allSyncedIds = project.lyrics
+                    .filter((lyric) =>
+                        Number.isFinite(lyric.start)
+                    )
+                    .map((lyric) => lyric.id);
+
+                setSelectedLyricIds(allSyncedIds);
+
+                if (allSyncedIds.length > 0) {
+                    setSelectionAnchorId(
+                        allSyncedIds[allSyncedIds.length - 1]
+                    );
+                }
+
+                return;
+            }
+
+            if (event.key === "Escape") {
+                event.preventDefault();
+
+                setSelectedLyricIds([]);
+                setSelectionAnchorId(null);
+
+                return;
+            }
+
+            if (!selectedLyric) {
                 return;
             }
 
@@ -330,7 +471,32 @@ function EditorPage({
 
             if (event.key === "Escape") {
                 event.preventDefault();
-                setSelectedLyricId(null);
+
+                setSelectedLyricIds([]);
+                setSelectionAnchorId(null);
+
+                return;
+            }
+
+            if (
+                (event.ctrlKey || event.metaKey) &&
+                event.key.toLowerCase() === "a"
+            ) {
+                event.preventDefault();
+
+                const allSyncedIds = project.lyrics
+                    .filter((lyric) =>
+                        Number.isFinite(lyric.start)
+                    )
+                    .map((lyric) => lyric.id);
+
+                setSelectedLyricIds(allSyncedIds);
+
+                if (allSyncedIds.length > 0) {
+                    setSelectionAnchorId(
+                        allSyncedIds[allSyncedIds.length - 1]
+                    );
+                }
             }
         };
 
@@ -579,7 +745,6 @@ function EditorPage({
                                     : "Paused"}
                             </strong>
                         </div>
-
                         <div className="project-summary">
                             <span>Current lyric</span>
 
@@ -589,6 +754,20 @@ function EditorPage({
                                     : "None"}
                             </strong>
                         </div>
+
+                        {selectedLyricIds.length > 0 && (
+                            <div className="selection-summary">
+                                <span>Selection</span>
+
+                                <strong>
+                                    {selectedLyricIds.length}{" "}
+                                    {selectedLyricIds.length === 1
+                                        ? "lyric"
+                                        : "lyrics"}
+                                </strong>
+                            </div>
+                        )}
+
                         {selectedLyric && (
                             <div className="timing-inspector">
                                 <div className="timing-inspector__header">
@@ -765,7 +944,7 @@ function EditorPage({
                                             <kbd>Delete</kbd>
                                         </div>
 
-                                        <span>Reset clip timing</span>
+                                        <span>Remove timing, keep lyric</span>
                                     </div>
 
                                     <div className="timing-inspector__shortcut">
@@ -787,9 +966,12 @@ function EditorPage({
                         currentTime={audioTransport.currentTime}
                         duration={audioTransport.duration}
                         activeLyricId={activeLyric?.id ?? null}
-                        selectedLyricId={selectedLyricId}
+                        selectedLyricIds={selectedLyricIds}
+                        primarySelectedLyricId={
+                            primarySelectedLyricId
+                        }
                         onSeek={audioTransport.seek}
-                        onSelectLyric={setSelectedLyricId}
+                        onSelectLyric={handleSelectLyric}
                         onTimingChange={handleLyricTimingChange}
                     />
                 </section>

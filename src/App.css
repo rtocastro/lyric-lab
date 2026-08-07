@@ -1970,3 +1970,50 @@ button {
   color: var(--text-muted);
   font-size: 0.6rem;
 }
+
+/* Multi-selection */
+
+.lyric-timeline__clip--selected {
+  z-index: 4;
+  outline: 1px solid rgba(255, 255, 255, 0.72);
+  outline-offset: 1px;
+}
+
+.lyric-timeline__clip--primary {
+  z-index: 6;
+  outline: 2px solid #ffffff;
+  outline-offset: 3px;
+  box-shadow:
+    0 0 0 2px rgba(85, 199, 255, 0.16),
+    0 8px 22px rgba(0, 0, 0, 0.3);
+}
+
+.lyric-timeline__clip--selected:not(
+    .lyric-timeline__clip--primary
+  ) {
+  opacity: 0.82;
+}
+
+.selection-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.selection-summary span {
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.selection-summary strong {
+  color: var(--accent);
+  font-size: 0.72rem;
+}
