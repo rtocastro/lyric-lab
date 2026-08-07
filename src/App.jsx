@@ -16,6 +16,18 @@ function createNewProject() {
     artist: "",
     audioFile: null,
     lyrics: [],
+
+    style: {
+      fontFamily: "Montserrat",
+      fontSize: 72,
+      color: "#FFFFFF",
+      outlineColor: "#000000",
+      outlineWidth: 2,
+      shadow: true,
+      glow: false,
+      position: "bottom",
+    },
+
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };

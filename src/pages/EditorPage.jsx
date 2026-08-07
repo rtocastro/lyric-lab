@@ -10,6 +10,7 @@ import AudioPanel from "../features/audio/AudioPanel";
 import useAudioTransport from "../features/audio/useAudioTransport";
 import LyricPanel from "../features/lyrics/LyricPanel";
 import LyricTimeline from "../features/timeline/LyricTimeline";
+import StylePanel from "../features/style/StylePanel";
 import { getActiveLyric } from "../utils/getActiveLyric";
 
 
@@ -149,6 +150,19 @@ function EditorPage({
             onProjectChange((currentProject) => ({
                 ...currentProject,
                 lyrics,
+            }));
+        },
+        [onProjectChange]
+    );
+
+    const handleStyleChange = useCallback(
+        (updates) => {
+            onProjectChange((currentProject) => ({
+                ...currentProject,
+                style: {
+                    ...currentProject.style,
+                    ...updates,
+                },
             }));
         },
         [onProjectChange]
@@ -544,9 +558,13 @@ function EditorPage({
                         <div
                             className={[
                                 "preview__lyric-stage",
+
                                 activeLyric
                                     ? "preview__lyric-stage--active"
                                     : "",
+
+                                `preview__lyric-stage--${project.style?.position ?? "center"
+                                }`,
                             ]
                                 .filter(Boolean)
                                 .join(" ")}
@@ -558,7 +576,43 @@ function EditorPage({
                                     : "Video Preview"}
                             </span>
 
-                            <strong className="preview__lyric">
+                            <strong
+                                className={[
+                                    "preview__lyric",
+                                    project.style?.shadow
+                                        ? "preview__lyric--shadow"
+                                        : "",
+                                    project.style?.glow
+                                        ? "preview__lyric--glow"
+                                        : "",
+                                ]
+                                    .filter(Boolean)
+                                    .join(" ")}
+                                style={{
+                                    fontFamily:
+                                        project.style?.fontFamily ??
+                                        "Montserrat",
+
+                                    fontSize: `${project.style?.fontSize ?? 72
+                                        }px`,
+
+                                    color:
+                                        project.style?.color ??
+                                        "#FFFFFF",
+
+                                    WebkitTextStroke:
+                                        (project.style?.outlineWidth ?? 2) > 0
+                                            ? `${project.style?.outlineWidth ?? 2
+                                            }px ${project.style?.outlineColor ??
+                                            "#000000"
+                                            }`
+                                            : "none",
+
+                                    textAlign:
+                                        project.style?.textAlign ??
+                                        "center",
+                                }}
+                            >
                                 {previewText}
                             </strong>
                         </div>
@@ -639,6 +693,7 @@ function EditorPage({
             );
         }
 
+
         if (activeSection === "lyrics") {
             return (
                 <LyricPanel
@@ -652,6 +707,18 @@ function EditorPage({
                         audioTransport.togglePlayback
                     }
                     onSeek={audioTransport.seek}
+
+                />
+
+            );
+
+        }
+
+        if (activeSection === "style") {
+            return (
+                <StylePanel
+                    style={project.style}
+                    onStyleChange={handleStyleChange}
                 />
             );
         }
