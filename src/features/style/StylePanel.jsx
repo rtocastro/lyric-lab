@@ -14,6 +14,7 @@ const FONT_OPTIONS = [
 function StylePanel({
   style,
   onStyleChange,
+  preview,
 }) {
   const currentStyle = {
     fontFamily: "Montserrat",
@@ -34,8 +35,13 @@ function StylePanel({
     });
   };
 
-  return (
-    <Panel title="Style">
+return (
+  <Panel title="Style">
+    <div className="style-workspace">
+      <div className="style-workspace__preview">
+        {preview}
+      </div>
+
       <div className="style-panel">
         <section className="style-panel__section">
           <div className="style-panel__section-heading">
@@ -302,8 +308,9 @@ function StylePanel({
           </div>
         </section>
       </div>
-    </Panel>
-  );
+    </div>
+  </Panel>
+);
 }
 
 export default StylePanel;

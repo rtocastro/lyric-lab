@@ -719,6 +719,59 @@ function EditorPage({
                 <StylePanel
                     style={project.style}
                     onStyleChange={handleStyleChange}
+                    preview={
+                        <div className="style-preview">
+                            <div
+                                className={[
+                                    "style-preview__stage",
+                                    `style-preview__stage--${project.style?.position ?? "center"
+                                    }`,
+                                ].join(" ")}
+                            >
+                                <strong
+                                    className={[
+                                        "style-preview__lyric",
+                                        project.style?.shadow
+                                            ? "style-preview__lyric--shadow"
+                                            : "",
+                                        project.style?.glow
+                                            ? "style-preview__lyric--glow"
+                                            : "",
+                                    ]
+                                        .filter(Boolean)
+                                        .join(" ")}
+                                    style={{
+                                        fontFamily:
+                                            project.style?.fontFamily ??
+                                            "Montserrat",
+
+                                        fontSize: `${project.style?.fontSize ?? 72
+                                            }px`,
+
+                                        color:
+                                            project.style?.color ??
+                                            "#FFFFFF",
+
+                                        WebkitTextStroke:
+                                            (project.style?.outlineWidth ?? 2) > 0
+                                                ? `${project.style?.outlineWidth ?? 2
+                                                }px ${project.style?.outlineColor ??
+                                                "#000000"
+                                                }`
+                                                : "none",
+
+                                        textAlign:
+                                            project.style?.textAlign ??
+                                            "center",
+                                    }}
+                                >
+                                    {activeLyric?.text ??
+                                        selectedLyric?.text ??
+                                        "Lyric Preview"}
+                                </strong>
+                            </div>
+                        </div>
+                    }
                 />
             );
         }
