@@ -50,11 +50,9 @@ body {
   min-height: 100vh;
   overflow: hidden;
   background:
-    radial-gradient(
-      circle at top,
+    radial-gradient(circle at top,
       #131a21 0%,
-      var(--background) 44%
-    );
+      var(--background) 44%);
 }
 
 button,
@@ -148,11 +146,9 @@ button {
   border-radius: 22px;
   text-align: center;
   background:
-    linear-gradient(
-      145deg,
+    linear-gradient(145deg,
       rgba(255, 255, 255, 0.035),
-      rgba(255, 255, 255, 0.008)
-    ),
+      rgba(255, 255, 255, 0.008)),
     var(--surface);
   box-shadow:
     0 24px 80px rgba(0, 0, 0, 0.38);
@@ -279,8 +275,7 @@ button {
   display: grid;
   min-height: 0;
   grid-template-columns:
-    var(--sidebar-width)
-    minmax(0, 1fr);
+    var(--sidebar-width) minmax(0, 1fr);
 }
 
 .sidebar {
@@ -335,15 +330,11 @@ button {
 
 .editor-grid {
   display: grid;
-  min-height: calc(
-    100vh - var(--topbar-height) - 28px
-  );
+  min-height: calc(100vh - var(--topbar-height) - 28px);
   grid-template-columns:
-    minmax(0, 1fr)
-    310px;
+    minmax(0, 1fr) 310px;
   grid-template-rows:
-    minmax(360px, 1fr)
-    220px;
+    minmax(360px, 1fr) 220px;
   gap: 14px;
 }
 
@@ -419,11 +410,9 @@ button {
   overflow: hidden;
   border: 1px solid #272d36;
   background:
-    radial-gradient(
-      circle at center,
+    radial-gradient(circle at center,
       rgba(85, 199, 255, 0.12),
-      transparent 45%
-    ),
+      transparent 45%),
     #050607;
   box-shadow:
     0 20px 50px rgba(0, 0, 0, 0.36);
@@ -433,12 +422,10 @@ button {
   position: absolute;
   inset: 0;
   background:
-    repeating-linear-gradient(
-      to bottom,
+    repeating-linear-gradient(to bottom,
       transparent 0,
       transparent 3px,
-      rgba(255, 255, 255, 0.025) 4px
-    );
+      rgba(255, 255, 255, 0.025) 4px);
   content: "";
   pointer-events: none;
 }
@@ -526,12 +513,10 @@ button {
   border: 1px solid var(--border);
   border-radius: 8px;
   background:
-    repeating-linear-gradient(
-      to right,
+    repeating-linear-gradient(to right,
       transparent,
       transparent 79px,
-      rgba(255, 255, 255, 0.05) 80px
-    ),
+      rgba(255, 255, 255, 0.05) 80px),
     var(--surface-light);
 }
 
@@ -573,9 +558,7 @@ button {
   .editor-grid {
     grid-template-columns: 1fr;
     grid-template-rows:
-      minmax(320px, auto)
-      auto
-      200px;
+      minmax(320px, auto) auto 200px;
   }
 
   .editor-grid__timeline {
@@ -626,11 +609,9 @@ button {
   border-radius: 12px;
   color: var(--text-secondary);
   background:
-    radial-gradient(
-      circle at center,
+    radial-gradient(circle at center,
       var(--accent-soft),
-      transparent 55%
-    ),
+      transparent 55%),
     var(--surface-light);
   cursor: pointer;
   transition:
@@ -860,17 +841,13 @@ button {
   overflow: hidden;
   padding: 20px;
   background:
-    repeating-linear-gradient(
-      to right,
+    repeating-linear-gradient(to right,
       transparent 0,
       transparent 59px,
-      rgba(255, 255, 255, 0.035) 60px
-    ),
-    linear-gradient(
-      to bottom,
+      rgba(255, 255, 255, 0.035) 60px),
+    linear-gradient(to bottom,
       rgba(85, 199, 255, 0.025),
-      transparent
-    );
+      transparent);
 }
 
 .audio-waveform__center-line {
@@ -967,12 +944,10 @@ button {
   outline: none;
   color: var(--text-primary);
   background:
-    repeating-linear-gradient(
-      to bottom,
+    repeating-linear-gradient(to bottom,
       transparent 0,
       transparent 31px,
-      rgba(255, 255, 255, 0.035) 32px
-    ),
+      rgba(255, 255, 255, 0.035) 32px),
     var(--surface-light);
   font-family: inherit;
   font-size: 0.95rem;
@@ -996,7 +971,7 @@ button {
   margin-top: 14px;
 }
 
-.lyric-import__footer > span {
+.lyric-import__footer>span {
   color: var(--text-muted);
   font-size: 0.75rem;
 }
@@ -1061,11 +1036,9 @@ button {
   border-color: rgba(85, 199, 255, 0.5);
   color: var(--text-primary);
   background:
-    linear-gradient(
-      90deg,
+    linear-gradient(90deg,
       var(--accent-soft),
-      transparent 60%
-    ),
+      transparent 60%),
     var(--surface-light);
   transform: translateX(3px);
 }
@@ -1150,6 +1123,7 @@ button {
 }
 
 @media (max-width: 650px) {
+
   .lyric-import__footer,
   .lyric-workspace__toolbar {
     align-items: stretch;
@@ -1236,13 +1210,13 @@ button {
   overflow: hidden;
 }
 
-.editor-grid__main > .panel {
+.editor-grid__main>.panel {
   height: 100%;
   min-height: 0;
   overflow: hidden;
 }
 
-.editor-grid__main > .panel > .panel__content {
+.editor-grid__main>.panel>.panel__content {
   display: flex;
   min-height: 0;
   flex-direction: column;
@@ -1308,20 +1282,20 @@ button {
   opacity: 0.4;
 }
 
-.lyric-sync-status > div:nth-child(2) {
+.lyric-sync-status>div:nth-child(2) {
   display: flex;
   flex-direction: column;
   gap: 3px;
 }
 
-.lyric-sync-status > div:nth-child(2) span {
+.lyric-sync-status>div:nth-child(2) span {
   color: var(--text-muted);
   font-size: 0.65rem;
   font-weight: 700;
   text-transform: uppercase;
 }
 
-.lyric-sync-status > div:nth-child(2) strong {
+.lyric-sync-status>div:nth-child(2) strong {
   color: var(--accent);
   font-family: ui-monospace, SFMono-Regular, Consolas,
     monospace;
@@ -1361,19 +1335,55 @@ button {
 /* Live lyric preview */
 
 .preview__canvas {
+  position: relative;
   isolation: isolate;
+  overflow: hidden;
 }
 
 .preview__lyric-stage {
-  position: relative;
+  position: absolute;
   z-index: 2;
+  top: 50%;
+  left: 50%;
+
   display: flex;
-  width: 100%;
-  max-width: 86%;
+  width: 84%;
+  height: 52%;
+  max-width: 84%;
+
   flex-direction: column;
   align-items: center;
   justify-content: center;
+
   text-align: center;
+
+  transform: translate(-50%, -50%);
+}
+
+.preview__lyric-stage--top {
+  top: 28%;
+}
+
+.preview__lyric-stage--center {
+  top: 50%;
+}
+
+.preview__lyric-stage--bottom {
+  top: 72%;
+}
+
+.preview__text-safe-area {
+  display: flex;
+
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
 }
 
 .preview__lyric-stage--active {
@@ -1525,11 +1535,9 @@ button {
   border: 1px solid var(--border);
   border-radius: 8px;
   background:
-    linear-gradient(
-      to bottom,
+    linear-gradient(to bottom,
       rgba(85, 199, 255, 0.025),
-      transparent
-    ),
+      transparent),
     var(--surface-light);
 }
 
@@ -1588,11 +1596,9 @@ button {
   border-radius: 6px;
   color: var(--text-secondary);
   background:
-    linear-gradient(
-      135deg,
+    linear-gradient(135deg,
       rgba(85, 199, 255, 0.16),
-      rgba(85, 199, 255, 0.055)
-    ),
+      rgba(85, 199, 255, 0.055)),
     var(--surface);
   cursor: pointer;
   transition:
@@ -1685,13 +1691,11 @@ button {
   border-style: dashed;
   color: var(--text-primary);
   background:
-    repeating-linear-gradient(
-      135deg,
+    repeating-linear-gradient(135deg,
       rgba(85, 199, 255, 0.18) 0,
       rgba(85, 199, 255, 0.18) 8px,
       rgba(85, 199, 255, 0.07) 8px,
-      rgba(85, 199, 255, 0.07) 16px
-    ),
+      rgba(85, 199, 255, 0.07) 16px),
     var(--surface);
 }
 
@@ -1765,12 +1769,12 @@ button {
   gap: 8px;
 }
 
-.timing-inspector__group > span {
+.timing-inspector__group>span {
   color: var(--text-muted);
   font-size: 0.72rem;
 }
 
-.timing-inspector__group > strong {
+.timing-inspector__group>strong {
   color: var(--text-primary);
   font-family:
     ui-monospace,
@@ -1822,18 +1826,19 @@ button {
   overflow: hidden;
 }
 
-.editor-grid__inspector > .panel {
+.editor-grid__inspector>.panel {
   min-height: 0;
   overflow: hidden;
 }
 
-.editor-grid__inspector > .panel > .panel__content {
+.editor-grid__inspector>.panel>.panel__content {
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-gutter: stable;
   overscroll-behavior: contain;
 }
+
 .editor-grid__inspector .panel__content::-webkit-scrollbar {
   width: 8px;
 }
@@ -1929,15 +1934,14 @@ button {
 .timing-inspector__shortcut {
   display: grid;
   grid-template-columns:
-    minmax(105px, auto)
-    minmax(0, 1fr);
+    minmax(105px, auto) minmax(0, 1fr);
   align-items: center;
   gap: 10px;
   color: var(--text-muted);
   font-size: 0.67rem;
 }
 
-.timing-inspector__shortcut > div {
+.timing-inspector__shortcut>div {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -1964,7 +1968,7 @@ button {
   line-height: 1;
 }
 
-.timing-inspector__shortcut > div > span {
+.timing-inspector__shortcut>div>span {
   color: var(--text-muted);
   font-size: 0.6rem;
 }
@@ -1986,9 +1990,7 @@ button {
     0 8px 22px rgba(0, 0, 0, 0.3);
 }
 
-.lyric-timeline__clip--selected:not(
-    .lyric-timeline__clip--primary
-  ) {
+.lyric-timeline__clip--selected:not(.lyric-timeline__clip--primary) {
   opacity: 0.82;
 }
 
@@ -2019,9 +2021,8 @@ button {
 .preview__lyric {
   transition:
     color 140ms ease,
-    font-size 140ms ease,
     text-shadow 140ms ease,
-    transform 140ms ease;
+    -webkit-text-stroke 140ms ease;
 }
 
 .preview__lyric--shadow {
@@ -2056,7 +2057,7 @@ button {
   gap: 16px;
 }
 
-.style-panel__section + .style-panel__section {
+.style-panel__section+.style-panel__section {
   padding-top: 20px;
   border-top: 1px solid var(--border);
 }
@@ -2163,7 +2164,7 @@ button {
   accent-color: var(--accent);
 }
 
-.style-panel__toggle > div {
+.style-panel__toggle>div {
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -2238,18 +2239,17 @@ button {
   overflow-wrap: anywhere;
   transition:
     color 140ms ease,
-    font-size 140ms ease,
     text-shadow 140ms ease,
     -webkit-text-stroke 140ms ease;
 }
 
 /* Scrollable Style panel */
 
-.editor-grid__main > .panel {
+.editor-grid__main>.panel {
   min-height: 0;
 }
 
-.editor-grid__main > .panel > .panel__content {
+.editor-grid__main>.panel>.panel__content {
   min-height: 0;
 }
 
@@ -2283,8 +2283,7 @@ button {
 .style-workspace {
   display: grid;
   grid-template-columns:
-    minmax(280px, 0.95fr)
-    minmax(360px, 1.05fr);
+    minmax(280px, 0.95fr) minmax(360px, 1.05fr);
   gap: 18px;
   min-height: 0;
   height: 100%;
@@ -2317,4 +2316,33 @@ button {
   .style-preview {
     position: relative;
   }
+}
+
+/* Preview text safe area */
+
+.preview__text-safe-area {
+  display: flex;
+
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+}
+
+.preview__lyric {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  margin: 0;
+  overflow: visible;
+  overflow-wrap: normal;
+  word-break: normal;
+  white-space: normal;
+  line-height: 1.05;
 }
