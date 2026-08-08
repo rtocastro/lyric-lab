@@ -10,6 +10,7 @@ import AudioPanel from "../features/audio/AudioPanel";
 import useAudioTransport from "../features/audio/useAudioTransport";
 import LyricPanel from "../features/lyrics/LyricPanel";
 import LyricTimeline from "../features/timeline/LyricTimeline";
+import PreviewCanvas from "../features/preview/PreviewCanvas";
 import StylePanel from "../features/style/StylePanel";
 import { getActiveLyric } from "../utils/getActiveLyric";
 
@@ -543,133 +544,25 @@ function EditorPage({
 
         return (
             <Panel title="Live Preview">
-                <div className="preview">
-                    <div className="preview__canvas">
-                        <div className="preview__hud preview__hud--top">
-                            <span>Live lyric preview</span>
-
-                            <strong>
-                                {audioTransport.isPlaying
-                                    ? "Playing"
-                                    : "Paused"}
-                            </strong>
-                        </div>
-
-                        <div
-                            className={[
-                                "preview__lyric-stage",
-
-                                activeLyric
-                                    ? "preview__lyric-stage--active"
-                                    : "",
-
-                                `preview__lyric-stage--${project.style?.position ?? "center"
-                                }`,
-                            ]
-                                .filter(Boolean)
-                                .join(" ")}
-                            key={activeLyric?.id ?? "empty-preview"}
-                        >
-                            <span className="preview__eyebrow">
-                                {activeLyric
-                                    ? `Line ${activeLyric.order + 1}`
-                                    : "Video Preview"}
-                            </span>
-
-                            <strong
-                                className={[
-                                    "preview__lyric",
-                                    project.style?.shadow
-                                        ? "preview__lyric--shadow"
-                                        : "",
-                                    project.style?.glow
-                                        ? "preview__lyric--glow"
-                                        : "",
-                                ]
-                                    .filter(Boolean)
-                                    .join(" ")}
-                                style={{
-                                    fontFamily:
-                                        project.style?.fontFamily ??
-                                        "Montserrat",
-
-                                    fontSize: `${project.style?.fontSize ?? 72
-                                        }px`,
-
-                                    color:
-                                        project.style?.color ??
-                                        "#FFFFFF",
-
-                                    WebkitTextStroke:
-                                        (project.style?.outlineWidth ?? 2) > 0
-                                            ? `${project.style?.outlineWidth ?? 2
-                                            }px ${project.style?.outlineColor ??
-                                            "#000000"
-                                            }`
-                                            : "none",
-
-                                    textAlign:
-                                        project.style?.textAlign ??
-                                        "center",
-                                }}
-                            >
-                                {previewText}
-                            </strong>
-                        </div>
-
-                        <div className="preview__hud preview__hud--bottom">
-                            <button
-                                className="preview__play-button"
-                                type="button"
-                                onClick={audioTransport.togglePlayback}
-                                disabled={!project.audioFile}
-                                aria-label={
-                                    audioTransport.isPlaying
-                                        ? "Pause song"
-                                        : "Play song"
-                                }
-                            >
-                                {audioTransport.isPlaying ? "❚❚" : "▶"}
-                            </button>
-
-                            <div className="preview__time">
-                                <strong>
-                                    {formatPreviewTime(
-                                        audioTransport.currentTime
-                                    )}
-                                </strong>
-
-                                <span>
-                                    /{" "}
-                                    {formatDuration(
-                                        audioTransport.duration
-                                    )}
-                                </span>
-                            </div>
-
-                            <div className="preview__progress">
-                                <div
-                                    className="preview__progress-fill"
-                                    style={{
-                                        width:
-                                            audioTransport.duration > 0
-                                                ? `${Math.min(
-                                                    (audioTransport.currentTime /
-                                                        audioTransport.duration) *
-                                                    100,
-                                                    100
-                                                )}%`
-                                                : "0%",
-                                    }}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <PreviewCanvas
+                    text={previewText}
+                    lineLabel={
+                        activeLyric
+                            ? `Line ${activeLyric.order + 1}`
+                            : "Video Preview"
+                    }
+                    style={project.style}
+                    isPlaying={audioTransport.isPlaying}
+                    currentTime={audioTransport.currentTime}
+                    duration={audioTransport.duration}
+                    hasAudio={Boolean(project.audioFile)}
+                    onTogglePlayback={
+                        audioTransport.togglePlayback
+                    }
+                />
             </Panel>
         );
     };
-
     const renderActivePanel = () => {
         if (activeSection === "audio") {
             return (
@@ -720,57 +613,28 @@ function EditorPage({
                     style={project.style}
                     onStyleChange={handleStyleChange}
                     preview={
-                        <div className="style-preview">
-                            <div
-                                className={[
-                                    "style-preview__stage",
-                                    `style-preview__stage--${project.style?.position ?? "center"
-                                    }`,
-                                ].join(" ")}
-                            >
-                                <strong
-                                    className={[
-                                        "style-preview__lyric",
-                                        project.style?.shadow
-                                            ? "style-preview__lyric--shadow"
-                                            : "",
-                                        project.style?.glow
-                                            ? "style-preview__lyric--glow"
-                                            : "",
-                                    ]
-                                        .filter(Boolean)
-                                        .join(" ")}
-                                    style={{
-                                        fontFamily:
-                                            project.style?.fontFamily ??
-                                            "Montserrat",
-
-                                        fontSize: `${project.style?.fontSize ?? 72
-                                            }px`,
-
-                                        color:
-                                            project.style?.color ??
-                                            "#FFFFFF",
-
-                                        WebkitTextStroke:
-                                            (project.style?.outlineWidth ?? 2) > 0
-                                                ? `${project.style?.outlineWidth ?? 2
-                                                }px ${project.style?.outlineColor ??
-                                                "#000000"
-                                                }`
-                                                : "none",
-
-                                        textAlign:
-                                            project.style?.textAlign ??
-                                            "center",
-                                    }}
-                                >
-                                    {activeLyric?.text ??
-                                        selectedLyric?.text ??
-                                        "Lyric Preview"}
-                                </strong>
-                            </div>
-                        </div>
+                        <PreviewCanvas
+                            text={
+                                activeLyric?.text ??
+                                selectedLyric?.text ??
+                                "Lyric Preview"
+                            }
+                            lineLabel={
+                                activeLyric
+                                    ? `Line ${activeLyric.order + 1}`
+                                    : selectedLyric
+                                        ? `Line ${selectedLyric.order + 1}`
+                                        : "Style Preview"
+                            }
+                            style={project.style}
+                            isPlaying={audioTransport.isPlaying}
+                            currentTime={audioTransport.currentTime}
+                            duration={audioTransport.duration}
+                            hasAudio={Boolean(project.audioFile)}
+                            onTogglePlayback={
+                                audioTransport.togglePlayback
+                            }
+                        />
                     }
                 />
             );
