@@ -5,6 +5,9 @@ function PreviewCanvas({
     text,
     lineLabel,
     style,
+    animation,
+    lyricStart = null,
+    lyricEnd = null,
     isPlaying = false,
     currentTime = 0,
     duration = 0,
@@ -24,6 +27,37 @@ function PreviewCanvas({
         textAlign: "center",
         ...style,
     };
+
+    const currentAnimation = {
+        intro: "fade",
+        introDuration: 0.3,
+        outro: "fade",
+        outroDuration: 0.3,
+        ...animation,
+    };
+
+    const hasLyricTiming =
+        Number.isFinite(lyricStart) &&
+        Number.isFinite(lyricEnd) &&
+        lyricEnd > lyricStart;
+
+    const timeSinceLyricStart = hasLyricTiming
+        ? Math.max(0, currentTime - lyricStart)
+        : 0;
+
+    const timeUntilLyricEnd = hasLyricTiming
+        ? Math.max(0, lyricEnd - currentTime)
+        : Infinity;
+
+    const isInIntro =
+        hasLyricTiming &&
+        timeSinceLyricStart <
+        currentAnimation.introDuration;
+
+    const isInOutro =
+        hasLyricTiming &&
+        timeUntilLyricEnd <=
+        currentAnimation.outroDuration;
 
     const safeAreaRef = useRef(null);
     const lyricRef = useRef(null);
@@ -104,15 +138,24 @@ function PreviewCanvas({
                         className="preview__text-safe-area"
                     >
                         <strong
+                            key={`${lineLabel}-${text}`}
                             ref={lyricRef}
                             className={[
                                 "preview__lyric",
+
                                 currentStyle.shadow
                                     ? "preview__lyric--shadow"
                                     : "",
+
                                 currentStyle.glow
                                     ? "preview__lyric--glow"
                                     : "",
+
+                                isInOutro && currentAnimation.outro !== "none"
+                                    ? `preview__lyric--outro-${currentAnimation.outro}`
+                                    : currentAnimation.intro !== "none"
+                                        ? `preview__lyric--intro-${currentAnimation.intro}`
+                                        : "",
                             ]
                                 .filter(Boolean)
                                 .join(" ")}
@@ -125,6 +168,10 @@ function PreviewCanvas({
                                         ? `${currentStyle.outlineWidth}px ${currentStyle.outlineColor}`
                                         : "none",
                                 textAlign: currentStyle.textAlign,
+                                animationDuration: `${isInOutro
+                                        ? currentAnimation.outroDuration
+                                        : currentAnimation.introDuration
+                                    }s`,
                             }}
                         >
                             {text || "Your lyrics will appear here"}

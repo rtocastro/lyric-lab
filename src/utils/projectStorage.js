@@ -199,6 +199,12 @@ export async function loadSavedProject() {
                 glow: false,
                 position: "bottom",
             },
+            animation: savedProject.animation ?? {
+                intro: "fade",
+                introDuration: 0.3,
+                outro: "fade",
+                outroDuration: 0.3,
+            },
         };
     } catch (error) {
         console.error(

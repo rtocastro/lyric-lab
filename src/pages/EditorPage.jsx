@@ -12,6 +12,7 @@ import LyricPanel from "../features/lyrics/LyricPanel";
 import LyricTimeline from "../features/timeline/LyricTimeline";
 import PreviewCanvas from "../features/preview/PreviewCanvas";
 import StylePanel from "../features/style/StylePanel";
+import AnimationPanel from "../features/animation/AnimationPanel";
 import { getActiveLyric } from "../utils/getActiveLyric";
 
 
@@ -162,6 +163,19 @@ function EditorPage({
                 ...currentProject,
                 style: {
                     ...currentProject.style,
+                    ...updates,
+                },
+            }));
+        },
+        [onProjectChange]
+    );
+
+    const handleAnimationChange = useCallback(
+        (updates) => {
+            onProjectChange((currentProject) => ({
+                ...currentProject,
+                animation: {
+                    ...currentProject.animation,
                     ...updates,
                 },
             }));
@@ -552,6 +566,9 @@ function EditorPage({
                             : "Video Preview"
                     }
                     style={project.style}
+                    animation={project.animation}
+                    lyricStart={activeLyric?.start ?? null}
+                    lyricEnd={activeLyric?.end ?? null}
                     isPlaying={audioTransport.isPlaying}
                     currentTime={audioTransport.currentTime}
                     duration={audioTransport.duration}
@@ -627,6 +644,9 @@ function EditorPage({
                                         : "Style Preview"
                             }
                             style={project.style}
+                            animation={project.animation}
+                            lyricStart={activeLyric?.start ?? null}
+                            lyricEnd={activeLyric?.end ?? null}
                             isPlaying={audioTransport.isPlaying}
                             currentTime={audioTransport.currentTime}
                             duration={audioTransport.duration}
@@ -636,6 +656,15 @@ function EditorPage({
                             }
                         />
                     }
+                />
+            );
+        }
+
+        if (activeSection === "animation") {
+            return (
+                <AnimationPanel
+                    animation={project.animation}
+                    onAnimationChange={handleAnimationChange}
                 />
             );
         }

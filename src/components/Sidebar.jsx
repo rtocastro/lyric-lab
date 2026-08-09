@@ -25,6 +25,11 @@ const sidebarItems = [
         icon: "✎",
     },
     {
+        id: "animation",
+        icon: "✦",
+        label: "Animation",
+    },
+    {
         id: "visuals",
         icon: "◉",
         label: "Visuals",
@@ -58,8 +63,8 @@ function Sidebar({
                     return (
                         <button
                             className={`sidebar__item ${isActive
-                                    ? "sidebar__item--active"
-                                    : ""
+                                ? "sidebar__item--active"
+                                : ""
                                 }`}
                             type="button"
                             key={item.id}

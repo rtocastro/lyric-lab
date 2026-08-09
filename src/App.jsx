@@ -27,6 +27,12 @@ function createNewProject() {
       glow: false,
       position: "bottom",
     },
+    animation: {
+      intro: "fade",
+      introDuration: 0.3,
+      outro: "fade",
+      outroDuration: 0.3,
+    },
 
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
