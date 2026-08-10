@@ -570,7 +570,7 @@ function EditorPage({
                     lyricStart={activeLyric?.start ?? null}
                     lyricEnd={activeLyric?.end ?? null}
                     isPlaying={audioTransport.isPlaying}
-                    currentTime={audioTransport.currentTime}
+                    currentTime={audioTransport.visualTime}
                     duration={audioTransport.duration}
                     hasAudio={Boolean(project.audioFile)}
                     onTogglePlayback={

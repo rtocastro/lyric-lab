@@ -5,6 +5,7 @@ import {
   useState,
 } from "react";
 
+
 function useAudioTransport(audioFile) {
   const audioRef = useRef(null);
 
@@ -13,12 +14,14 @@ function useAudioTransport(audioFile) {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
+  const [visualTime, setVisualTime] = useState(0);
 
   useEffect(() => {
     if (!audioFile) {
       setAudioUrl("");
       setIsPlaying(false);
       setCurrentTime(0);
+      setVisualTime(0);
       setDuration(0);
       setErrorMessage("");
 
@@ -30,6 +33,7 @@ function useAudioTransport(audioFile) {
     setAudioUrl(objectUrl);
     setIsPlaying(false);
     setCurrentTime(0);
+    setVisualTime(0);
     setDuration(0);
     setErrorMessage("");
 
@@ -79,6 +83,7 @@ function useAudioTransport(audioFile) {
 
     audioElement.currentTime = safeTime;
     setCurrentTime(safeTime);
+    setVisualTime(safeTime);
   }, []);
 
   const pause = useCallback(() => {
@@ -103,7 +108,34 @@ function useAudioTransport(audioFile) {
 
     setCurrentTime(0);
     setIsPlaying(false);
+    setVisualTime(safeTime);
   }, []);
+
+  useEffect(() => {
+    if (!isPlaying) {
+      return undefined;
+    }
+
+    let animationFrameId;
+
+    const updateVisualTime = () => {
+      const audioElement = audioRef.current;
+
+      if (audioElement) {
+        setVisualTime(audioElement.currentTime);
+      }
+
+      animationFrameId =
+        requestAnimationFrame(updateVisualTime);
+    };
+
+    animationFrameId =
+      requestAnimationFrame(updateVisualTime);
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [isPlaying]);
 
   const audioElement = audioUrl ? (
     <audio
@@ -128,6 +160,7 @@ function useAudioTransport(audioFile) {
       onEnded={() => {
         setIsPlaying(false);
         setCurrentTime(0);
+        setVisualTime(safeTime);
       }}
     />
   ) : null;
@@ -137,6 +170,7 @@ function useAudioTransport(audioFile) {
     audioUrl,
     isPlaying,
     currentTime,
+    visualTime,
     duration,
     errorMessage,
     setErrorMessage,

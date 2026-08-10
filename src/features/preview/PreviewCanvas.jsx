@@ -59,6 +59,36 @@ function PreviewCanvas({
         timeUntilLyricEnd <=
         currentAnimation.outroDuration;
 
+    const clamp01 = (value) =>
+        Math.min(Math.max(value, 0), 1);
+
+    const introProgress =
+        hasLyricTiming &&
+            currentAnimation.introDuration > 0
+            ? clamp01(
+                timeSinceLyricStart /
+                currentAnimation.introDuration
+            )
+            : 1;
+
+    const outroProgress =
+        hasLyricTiming &&
+            currentAnimation.outroDuration > 0
+            ? clamp01(
+                1 -
+                timeUntilLyricEnd /
+                currentAnimation.outroDuration
+            )
+            : 0;
+
+    const activeAnimationDuration = isInOutro
+        ? currentAnimation.outroDuration
+        : currentAnimation.introDuration;
+
+    const activeAnimationProgress = isInOutro
+        ? outroProgress
+        : introProgress;
+
     const safeAreaRef = useRef(null);
     const lyricRef = useRef(null);
 
@@ -168,10 +198,16 @@ function PreviewCanvas({
                                         ? `${currentStyle.outlineWidth}px ${currentStyle.outlineColor}`
                                         : "none",
                                 textAlign: currentStyle.textAlign,
-                                animationDuration: `${isInOutro
-                                        ? currentAnimation.outroDuration
-                                        : currentAnimation.introDuration
+                                animationDuration: `${Math.max(
+                                    activeAnimationDuration,
+                                    0.001
+                                )}s`,
+
+                                animationDelay: `-${activeAnimationProgress *
+                                    Math.max(activeAnimationDuration, 0.001)
                                     }s`,
+
+                                animationPlayState: "paused",
                             }}
                         >
                             {text || "Your lyrics will appear here"}
