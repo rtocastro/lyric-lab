@@ -2671,3 +2671,58 @@ button {
   border-color: var(--danger);
   background: rgba(255, 100, 124, 0.1);
 }
+
+.animation-panel__preview {
+  margin-bottom: 14px;
+}
+
+.animation-panel__audition {
+  min-height: 38px;
+  border: 1px solid var(--accent);
+  border-radius: 7px;
+  color: #06131a;
+  background: var(--accent);
+  cursor: pointer;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.animation-panel__audition:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.animation-panel {
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.animation-panel__preview {
+  display: flex;
+  justify-content: center;
+  margin: 12px 0;
+}
+
+.animation-panel__preview-frame {
+  width: min(100%, 560px);
+}
+
+/*
+ * The Animation workspace preview is an audition monitor,
+ * not the full-size Project preview.
+ */
+.animation-panel__preview-frame .preview {
+  width: 100%;
+}
+
+.animation-panel__preview-frame .preview__canvas {
+  min-height: 220px;
+  height: 220px;
+}
+
+.animation-panel__audition {
+  width: 100%;
+  margin-bottom: 16px;
+}

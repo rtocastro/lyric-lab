@@ -59,6 +59,12 @@ function EditorPage({
     const [selectionAnchorId, setSelectionAnchorId] =
         useState(null);
 
+    const [isAuditioning, setIsAuditioning] =
+        useState(false);
+
+    const [auditionTime, setAuditionTime] =
+        useState(0);
+
     const audioTransport = useAudioTransport(
         project.audioFile
     );
@@ -154,6 +160,62 @@ function EditorPage({
             title: event.target.value,
         });
     };
+
+    useEffect(() => {
+        if (
+            !isAuditioning ||
+            !selectedLyric ||
+            !Number.isFinite(selectedLyric.start)
+        ) {
+            return undefined;
+        }
+
+        const auditionStart = selectedLyric.start;
+
+        const auditionEnd = Number.isFinite(selectedLyric.end)
+            ? selectedLyric.end
+            : auditionStart + 2;
+
+        const auditionDuration = Math.max(
+            auditionEnd - auditionStart,
+            0.05
+        );
+
+        const startedAt = performance.now();
+
+        let animationFrameId;
+
+        const updateAudition = (now) => {
+            const elapsed =
+                (now - startedAt) / 1000;
+
+            const nextTime =
+                auditionStart +
+                Math.min(elapsed, auditionDuration);
+
+            setAuditionTime(nextTime);
+
+            if (elapsed >= auditionDuration) {
+                setIsAuditioning(false);
+                return;
+            }
+
+            animationFrameId =
+                requestAnimationFrame(updateAudition);
+        };
+
+        setAuditionTime(auditionStart);
+
+        animationFrameId =
+            requestAnimationFrame(updateAudition);
+
+        return () => {
+            cancelAnimationFrame(animationFrameId);
+        };
+    }, [
+        isAuditioning,
+        selectedLyric,
+    ]);
 
     const handleArtistChange = (event) => {
         onProjectChange({
@@ -480,6 +542,24 @@ function EditorPage({
         selectionAnchorId,
     ]);
 
+    const handleAuditionSelectedLyric =
+        useCallback(() => {
+            if (
+                !selectedLyric ||
+                !Number.isFinite(selectedLyric.start)
+            ) {
+                return;
+            }
+
+            setIsAuditioning(false);
+
+            requestAnimationFrame(() => {
+                setAuditionTime(selectedLyric.start);
+                setIsAuditioning(true);
+            });
+        }, [selectedLyric]);
+
+
     useEffect(() => {
         const handleTimelineKeyDown = (event) => {
             const target = event.target;
@@ -775,12 +855,55 @@ function EditorPage({
                     onResetSelectedAnimation={
                         handleResetSelectedLyricsAnimation
                     }
+                    onAuditionSelectedLyric={
+                        handleAuditionSelectedLyric
+                    }
+                    isAuditioning={isAuditioning}
+                    preview={
+                        <PreviewCanvas
+                            text={
+                                selectedLyric?.text ??
+                                activeLyric?.text ??
+                                "Select a lyric to preview"
+                            }
+                            lineLabel={
+                                selectedLyric
+                                    ? `Line ${selectedLyric.order + 1}`
+                                    : activeLyric
+                                        ? `Line ${activeLyric.order + 1}`
+                                        : "Animation Preview"
+                            }
+                            style={project.style}
+                            animation={
+                                selectedLyric
+                                    ? selectedLyricAnimation
+                                    : activeLyricAnimation
+                            }
+                            lyricStart={
+                                selectedLyric?.start ??
+                                activeLyric?.start ??
+                                null
+                            }
+                            lyricEnd={
+                                selectedLyric?.end ??
+                                activeLyric?.end ??
+                                null
+                            }
+                            isPlaying={isAuditioning}
+                            currentTime={
+                                isAuditioning
+                                    ? auditionTime
+                                    : audioTransport.visualTime
+                            }
+                            duration={audioTransport.duration}
+                            hasAudio={Boolean(project.audioFile)}
+                            onTogglePlayback={
+                                audioTransport.togglePlayback
+                            }
+                        />
+                    }
                 />
-
-
-
             );
-
         }
 
         return renderPreviewPanel();

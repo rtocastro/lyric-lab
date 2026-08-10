@@ -29,6 +29,9 @@ function AnimationPanel({
     onGlobalAnimationChange,
     onSelectedAnimationChange,
     onResetSelectedAnimation,
+    preview,
+    onAuditionSelectedLyric,
+    isAuditioning,
 }) {
     const [scope, setScope] = useState("global");
 
@@ -132,6 +135,23 @@ function AnimationPanel({
                         </button>
                     )}
                 </section>
+
+                <div className="animation-panel__preview">
+                    <div className="animation-panel__preview-frame">
+                        {preview}
+                    </div>
+                </div>
+
+                <button
+                    type="button"
+                    className="animation-panel__audition"
+                    onClick={onAuditionSelectedLyric}
+                    disabled={selectedCount === 0}
+                >
+                    {isAuditioning
+                        ? "Previewing…"
+                        : "Preview Selected Animation"}
+                </button>
 
                 <section className="animation-panel__section">
                     <div className="animation-panel__heading">
