@@ -33,6 +33,14 @@ function createNewProject() {
       outro: "fade",
       outroDuration: 0.3,
     },
+        visuals: {
+      backgroundType: "color",
+      backgroundColor: "#000000",
+      backgroundImage: null,
+      backgroundVideo: null,
+      fit: "cover",
+      position: "center",
+    },
 
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),

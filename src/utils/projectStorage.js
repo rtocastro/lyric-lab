@@ -205,6 +205,14 @@ export async function loadSavedProject() {
                 outro: "fade",
                 outroDuration: 0.3,
             },
+            visuals: savedProject.visuals ?? {
+                backgroundType: "color",
+                backgroundColor: "#000000",
+                backgroundImage: null,
+                backgroundVideo: null,
+                fit: "cover",
+                position: "center",
+            },
         };
     } catch (error) {
         console.error(

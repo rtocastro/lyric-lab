@@ -13,6 +13,7 @@ import LyricTimeline from "../features/timeline/LyricTimeline";
 import PreviewCanvas from "../features/preview/PreviewCanvas";
 import StylePanel from "../features/style/StylePanel";
 import AnimationPanel from "../features/animation/AnimationPanel";
+import VisualsPanel from "../features/visuals/VisualsPanel";
 import { getActiveLyric } from "../utils/getActiveLyric";
 
 
@@ -266,6 +267,21 @@ function EditorPage({
         },
         [onProjectChange]
     );
+
+    const handleVisualsChange =
+        useCallback(
+            (updates) => {
+                onProjectChange((currentProject) => ({
+                    ...currentProject,
+
+                    visuals: {
+                        ...currentProject.visuals,
+                        ...updates,
+                    },
+                }));
+            },
+            [onProjectChange]
+        );
 
     const handleSelectedLyricsAnimationChange =
         useCallback(
@@ -901,6 +917,17 @@ function EditorPage({
                                 audioTransport.togglePlayback
                             }
                         />
+                    }
+                />
+            );
+        }
+
+        if (activeSection === "visuals") {
+            return (
+                <VisualsPanel
+                    visuals={project.visuals}
+                    onVisualsChange={
+                        handleVisualsChange
                     }
                 />
             );
