@@ -2624,3 +2624,50 @@ button {
   font-size: 0.68rem;
   line-height: 1.4;
 }
+
+/* Timeline animation override badge */
+
+.lyric-timeline__animation-badge {
+  position: absolute;
+  z-index: 7;
+  top: 4px;
+  right: 5px;
+
+  display: grid;
+  width: 16px;
+  height: 16px;
+  place-items: center;
+
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 50%;
+
+  color: #06131a;
+  background: var(--accent);
+
+  font-size: 0.55rem;
+  font-weight: 900;
+  line-height: 1;
+
+  pointer-events: none;
+}
+
+.lyric-timeline__clip--primary
+  .lyric-timeline__animation-badge {
+  right: 11px;
+}
+
+.animation-panel__reset {
+  min-height: 38px;
+  border: 1px solid rgba(255, 100, 124, 0.35);
+  border-radius: 7px;
+  color: var(--danger);
+  background: rgba(255, 100, 124, 0.06);
+  cursor: pointer;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.animation-panel__reset:hover {
+  border-color: var(--danger);
+  background: rgba(255, 100, 124, 0.1);
+}

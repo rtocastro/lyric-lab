@@ -377,6 +377,10 @@ function LyricTimeline({
                                 const isDragging =
                                     lyric.id === draggingLyricId;
 
+                                const hasAnimationOverride =
+                                    lyric.animation &&
+                                    Object.keys(lyric.animation).length > 0;
+
                                 return (
                                     <div
                                         className={[
@@ -449,6 +453,16 @@ ${formatTime(
                                         <span className="lyric-timeline__clip-label">
                                             {lyric.text}
                                         </span>
+
+                                        {hasAnimationOverride && (
+                                            <span
+                                                className="lyric-timeline__animation-badge"
+                                                title="Custom animation override"
+                                                aria-label="Custom animation override"
+                                            >
+                                                ✦
+                                            </span>
+                                        )}
 
                                         {isPrimarySelected && (
                                             <button

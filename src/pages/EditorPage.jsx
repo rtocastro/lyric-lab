@@ -243,6 +243,41 @@ function EditorPage({
             ]
         );
 
+    const handleResetSelectedLyricsAnimation =
+        useCallback(() => {
+            if (selectedLyricIds.length === 0) {
+                return;
+            }
+
+            onProjectChange((currentProject) => ({
+                ...currentProject,
+
+                lyrics: currentProject.lyrics.map(
+                    (lyric) => {
+                        if (
+                            !selectedLyricIds.includes(
+                                lyric.id
+                            )
+                        ) {
+                            return lyric;
+                        }
+
+                        const {
+                            animation,
+                            ...lyricWithoutAnimation
+                        } = lyric;
+
+                        return lyricWithoutAnimation;
+                    }
+                ),
+            }));
+        },
+            [
+                onProjectChange,
+                selectedLyricIds,
+            ]
+        );
+
     const handleSelectLyric = useCallback(
         (
             lyricId,
@@ -737,8 +772,15 @@ function EditorPage({
                     onSelectedAnimationChange={
                         handleSelectedLyricsAnimationChange
                     }
+                    onResetSelectedAnimation={
+                        handleResetSelectedLyricsAnimation
+                    }
                 />
+
+
+
             );
+
         }
 
         return renderPreviewPanel();
@@ -839,6 +881,7 @@ function EditorPage({
                                     : "None"}
                             </strong>
                         </div>
+
 
                         {selectedLyricIds.length > 0 && (
                             <div className="selection-summary">
@@ -1039,6 +1082,9 @@ function EditorPage({
 
                                         <span>Deselect clip</span>
                                     </div>
+
+
+
                                 </div>
                             </div>
                         )}
