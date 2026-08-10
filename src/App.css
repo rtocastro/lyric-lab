@@ -2807,3 +2807,12 @@ button {
   font-size: 0.7rem;
   text-transform: uppercase;
 }
+
+.visuals-panel__preview {
+  margin-bottom: 18px;
+}
+
+.visuals-panel__preview .preview__canvas {
+  min-height: 260px;
+  height: 260px;
+}

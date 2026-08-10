@@ -6,6 +6,7 @@ function PreviewCanvas({
     lineLabel,
     style,
     animation,
+    visuals,
     lyricStart = null,
     lyricEnd = null,
     isPlaying = false,
@@ -34,6 +35,16 @@ function PreviewCanvas({
         outro: "fade",
         outroDuration: 0.3,
         ...animation,
+    };
+
+    const currentVisuals = {
+        backgroundType: "color",
+        backgroundColor: "#000000",
+        backgroundImage: null,
+        backgroundVideo: null,
+        fit: "cover",
+        position: "center",
+        ...visuals,
     };
 
     const hasLyricTiming =
@@ -137,7 +148,15 @@ function PreviewCanvas({
 
     return (
         <div className="preview">
-            <div className="preview__canvas">
+            <div
+                className="preview__canvas"
+                style={{
+                    backgroundColor:
+                        currentVisuals.backgroundType === "color"
+                            ? currentVisuals.backgroundColor
+                            : "#000000",
+                }}
+            >
                 {showHud && (
                     <div className="preview__hud preview__hud--top">
                         <span>Live lyric preview</span>

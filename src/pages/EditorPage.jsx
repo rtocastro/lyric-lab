@@ -758,6 +758,7 @@ function EditorPage({
                     }
                     style={project.style}
                     animation={activeLyricAnimation}
+                    visuals={project.visuals}
                     lyricStart={activeLyric?.start ?? null}
                     lyricEnd={activeLyric?.end ?? null}
                     isPlaying={audioTransport.isPlaying}
@@ -841,6 +842,7 @@ function EditorPage({
                             isPlaying={audioTransport.isPlaying}
                             currentTime={audioTransport.currentTime}
                             animation={activeLyricAnimation}
+                            visuals={project.visuals}
                             duration={audioTransport.duration}
                             hasAudio={Boolean(project.audioFile)}
                             onTogglePlayback={
@@ -916,6 +918,7 @@ function EditorPage({
                             onTogglePlayback={
                                 audioTransport.togglePlayback
                             }
+                            visuals={project.visuals}
                         />
                     }
                 />
@@ -928,6 +931,46 @@ function EditorPage({
                     visuals={project.visuals}
                     onVisualsChange={
                         handleVisualsChange
+                    }
+                    preview={
+                        <PreviewCanvas
+                            text={
+                                activeLyric?.text ??
+                                selectedLyric?.text ??
+                                "Lyric Preview"
+                            }
+                            lineLabel={
+                                activeLyric
+                                    ? `Line ${activeLyric.order + 1}`
+                                    : selectedLyric
+                                        ? `Line ${selectedLyric.order + 1}`
+                                        : "Visual Preview"
+                            }
+                            style={project.style}
+                            animation={activeLyricAnimation}
+                            visuals={project.visuals}
+                            lyricStart={
+                                activeLyric?.start ?? null
+                            }
+                            lyricEnd={
+                                activeLyric?.end ?? null
+                            }
+                            isPlaying={
+                                audioTransport.isPlaying
+                            }
+                            currentTime={
+                                audioTransport.visualTime
+                            }
+                            duration={
+                                audioTransport.duration
+                            }
+                            hasAudio={
+                                Boolean(project.audioFile)
+                            }
+                            onTogglePlayback={
+                                audioTransport.togglePlayback
+                            }
+                        />
                     }
                 />
             );
