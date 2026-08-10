@@ -99,6 +99,28 @@ function EditorPage({
         [project.lyrics, primarySelectedLyricId]
     );
 
+    const activeLyricAnimation = useMemo(
+        () => ({
+            ...project.animation,
+            ...(activeLyric?.animation ?? {}),
+        }),
+        [
+            project.animation,
+            activeLyric,
+        ]
+    );
+
+    const selectedLyricAnimation = useMemo(
+        () => ({
+            ...project.animation,
+            ...(selectedLyric?.animation ?? {}),
+        }),
+        [
+            project.animation,
+            selectedLyric,
+        ]
+    );
+
     const syncedLyricCount = useMemo(
         () =>
             project.lyrics.filter((lyric) =>
@@ -182,6 +204,44 @@ function EditorPage({
         },
         [onProjectChange]
     );
+
+    const handleSelectedLyricsAnimationChange =
+        useCallback(
+            (updates) => {
+                if (selectedLyricIds.length === 0) {
+                    return;
+                }
+
+                onProjectChange((currentProject) => ({
+                    ...currentProject,
+
+                    lyrics: currentProject.lyrics.map(
+                        (lyric) => {
+                            if (
+                                !selectedLyricIds.includes(
+                                    lyric.id
+                                )
+                            ) {
+                                return lyric;
+                            }
+
+                            return {
+                                ...lyric,
+
+                                animation: {
+                                    ...lyric.animation,
+                                    ...updates,
+                                },
+                            };
+                        }
+                    ),
+                }));
+            },
+            [
+                onProjectChange,
+                selectedLyricIds,
+            ]
+        );
 
     const handleSelectLyric = useCallback(
         (
@@ -566,7 +626,7 @@ function EditorPage({
                             : "Video Preview"
                     }
                     style={project.style}
-                    animation={project.animation}
+                    animation={activeLyricAnimation}
                     lyricStart={activeLyric?.start ?? null}
                     lyricEnd={activeLyric?.end ?? null}
                     isPlaying={audioTransport.isPlaying}
@@ -649,6 +709,7 @@ function EditorPage({
                             lyricEnd={activeLyric?.end ?? null}
                             isPlaying={audioTransport.isPlaying}
                             currentTime={audioTransport.currentTime}
+                            animation={activeLyricAnimation}
                             duration={audioTransport.duration}
                             hasAudio={Boolean(project.audioFile)}
                             onTogglePlayback={
@@ -663,8 +724,19 @@ function EditorPage({
         if (activeSection === "animation") {
             return (
                 <AnimationPanel
-                    animation={project.animation}
-                    onAnimationChange={handleAnimationChange}
+                    globalAnimation={project.animation}
+                    selectedAnimation={
+                        selectedLyricAnimation
+                    }
+                    selectedCount={
+                        selectedLyricIds.length
+                    }
+                    onGlobalAnimationChange={
+                        handleAnimationChange
+                    }
+                    onSelectedAnimationChange={
+                        handleSelectedLyricsAnimationChange
+                    }
                 />
             );
         }

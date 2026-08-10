@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Panel from "../../components/Panel";
 
 const INTRO_OPTIONS = [
@@ -22,30 +23,114 @@ const OUTRO_OPTIONS = [
 ];
 
 function AnimationPanel({
-  animation,
-  onAnimationChange,
+  globalAnimation,
+  selectedAnimation,
+  selectedCount,
+  onGlobalAnimationChange,
+  onSelectedAnimationChange,
 }) {
-  const currentAnimation = {
+  const [scope, setScope] = useState("global");
+
+  const defaultAnimation = {
     intro: "fade",
     introDuration: 0.3,
     outro: "fade",
     outroDuration: 0.3,
-    ...animation,
   };
 
+  const currentAnimation =
+    scope === "selected"
+      ? {
+          ...defaultAnimation,
+          ...globalAnimation,
+          ...selectedAnimation,
+        }
+      : {
+          ...defaultAnimation,
+          ...globalAnimation,
+        };
+
   const updateAnimation = (property, value) => {
-    onAnimationChange({
+    const updates = {
       [property]: value,
-    });
+    };
+
+    if (scope === "selected") {
+      onSelectedAnimationChange(updates);
+      return;
+    }
+
+    onGlobalAnimationChange(updates);
   };
+
+  const selectedModeDisabled =
+    selectedCount === 0;
 
   return (
     <Panel title="Animation">
       <div className="animation-panel">
         <section className="animation-panel__section">
           <div className="animation-panel__heading">
+            <span>Animation Scope</span>
+          </div>
+
+          <div className="animation-panel__scope">
+            <button
+              type="button"
+              className={
+                scope === "global"
+                  ? "is-active"
+                  : ""
+              }
+              onClick={() =>
+                setScope("global")
+              }
+            >
+              Global
+            </button>
+
+            <button
+              type="button"
+              className={
+                scope === "selected"
+                  ? "is-active"
+                  : ""
+              }
+              disabled={selectedModeDisabled}
+              onClick={() =>
+                setScope("selected")
+              }
+            >
+              Selected Lyrics
+            </button>
+          </div>
+
+          <div className="animation-panel__scope-status">
+            {scope === "global" ? (
+              <span>
+                Applies to all lyrics unless
+                overridden.
+              </span>
+            ) : (
+              <span>
+                Editing {selectedCount}{" "}
+                {selectedCount === 1
+                  ? "lyric"
+                  : "lyrics"}
+              </span>
+            )}
+          </div>
+        </section>
+
+        <section className="animation-panel__section">
+          <div className="animation-panel__heading">
             <span>Intro</span>
-            <strong>Global</strong>
+
+            <strong>
+              {scope === "global"
+                ? "Global"
+                : "Selection"}
+            </strong>
           </div>
 
           <div className="form-group">
@@ -63,11 +148,16 @@ function AnimationPanel({
                 )
               }
             >
-              {INTRO_OPTIONS.map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
+              {INTRO_OPTIONS.map(
+                ([value, label]) => (
+                  <option
+                    key={value}
+                    value={value}
+                  >
+                    {label}
+                  </option>
+                )
+              )}
             </select>
           </div>
 
@@ -78,7 +168,10 @@ function AnimationPanel({
               </label>
 
               <strong>
-                {currentAnimation.introDuration.toFixed(2)}s
+                {currentAnimation.introDuration.toFixed(
+                  2
+                )}
+                s
               </strong>
             </div>
 
@@ -88,7 +181,9 @@ function AnimationPanel({
               min="0"
               max="2"
               step="0.05"
-              value={currentAnimation.introDuration}
+              value={
+                currentAnimation.introDuration
+              }
               onChange={(event) =>
                 updateAnimation(
                   "introDuration",
@@ -102,6 +197,12 @@ function AnimationPanel({
         <section className="animation-panel__section">
           <div className="animation-panel__heading">
             <span>Outro</span>
+
+            <strong>
+              {scope === "global"
+                ? "Global"
+                : "Selection"}
+            </strong>
           </div>
 
           <div className="form-group">
@@ -119,11 +220,16 @@ function AnimationPanel({
                 )
               }
             >
-              {OUTRO_OPTIONS.map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
+              {OUTRO_OPTIONS.map(
+                ([value, label]) => (
+                  <option
+                    key={value}
+                    value={value}
+                  >
+                    {label}
+                  </option>
+                )
+              )}
             </select>
           </div>
 
@@ -134,7 +240,10 @@ function AnimationPanel({
               </label>
 
               <strong>
-                {currentAnimation.outroDuration.toFixed(2)}s
+                {currentAnimation.outroDuration.toFixed(
+                  2
+                )}
+                s
               </strong>
             </div>
 
@@ -144,7 +253,9 @@ function AnimationPanel({
               min="0"
               max="2"
               step="0.05"
-              value={currentAnimation.outroDuration}
+              value={
+                currentAnimation.outroDuration
+              }
               onChange={(event) =>
                 updateAnimation(
                   "outroDuration",
