@@ -57,7 +57,17 @@ function VisualsPanel({
 
                             <button
                                 type="button"
-                                disabled
+                                className={
+                                    currentVisuals.backgroundType === "image"
+                                        ? "is-active"
+                                        : ""
+                                }
+                                onClick={() =>
+                                    updateVisuals(
+                                        "backgroundType",
+                                        "image"
+                                    )
+                                }
                             >
                                 Image
                             </button>
@@ -75,6 +85,39 @@ function VisualsPanel({
                         <label htmlFor="visuals-background-color">
                             Background Color
                         </label>
+
+                        {currentVisuals.backgroundType === "image" && (
+                            <div className="form-group">
+                                <label htmlFor="visuals-background-image">
+                                    Background Image
+                                </label>
+
+                                <input
+                                    id="visuals-background-image"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(event) => {
+                                        const file =
+                                            event.target.files?.[0];
+
+                                        if (!file) {
+                                            return;
+                                        }
+
+                                        updateVisuals(
+                                            "backgroundImage",
+                                            file
+                                        );
+                                    }}
+                                />
+
+                                {currentVisuals.backgroundImage && (
+                                    <span className="visuals-panel__asset-name">
+                                        {currentVisuals.backgroundImage.name}
+                                    </span>
+                                )}
+                            </div>
+                        )}
 
                         <div className="visuals-panel__color-row">
                             <input

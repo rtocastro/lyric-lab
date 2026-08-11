@@ -1,4 +1,8 @@
-import { useRef } from "react";
+import {
+    useEffect,
+    useRef,
+    useState,
+} from "react";
 import useAutoFitText from "./useAutoFitText";
 
 function PreviewCanvas({
@@ -46,6 +50,34 @@ function PreviewCanvas({
         position: "center",
         ...visuals,
     };
+
+    const [backgroundImageUrl, setBackgroundImageUrl] =
+        useState("");
+
+    useEffect(() => {
+        const backgroundImage =
+            currentVisuals.backgroundImage;
+
+        if (
+            currentVisuals.backgroundType !== "image" ||
+            !(backgroundImage instanceof Blob)
+        ) {
+            setBackgroundImageUrl("");
+            return undefined;
+        }
+
+        const objectUrl =
+            URL.createObjectURL(backgroundImage);
+
+        setBackgroundImageUrl(objectUrl);
+
+        return () => {
+            URL.revokeObjectURL(objectUrl);
+        };
+    }, [
+        currentVisuals.backgroundType,
+        currentVisuals.backgroundImage,
+    ]);
 
     const hasLyricTiming =
         Number.isFinite(lyricStart) &&
@@ -155,6 +187,17 @@ function PreviewCanvas({
                         currentVisuals.backgroundType === "color"
                             ? currentVisuals.backgroundColor
                             : "#000000",
+
+                    backgroundImage:
+                        currentVisuals.backgroundType === "image" &&
+                            backgroundImageUrl
+                            ? `url("${backgroundImageUrl}")`
+                            : "none",
+
+                    backgroundSize: currentVisuals.fit,
+                    backgroundPosition:
+                        currentVisuals.position,
+                    backgroundRepeat: "no-repeat",
                 }}
             >
                 {showHud && (

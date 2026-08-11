@@ -30,7 +30,9 @@ function openDatabase() {
                     ASSET_STORE_NAME
                 )
             ) {
-                database.createObjectStore(ASSET_STORE_NAME);
+                database.createObjectStore(
+                    ASSET_STORE_NAME
+                );
             }
         };
     });
@@ -38,6 +40,10 @@ function openDatabase() {
 
 function getAudioStorageKey(projectId) {
     return `audio:${projectId}`;
+}
+
+function getBackgroundImageStorageKey(projectId) {
+    return `background-image:${projectId}`;
 }
 
 export function hasSavedProject() {
@@ -51,10 +57,20 @@ export function saveProjectMetadata(project) {
         return;
     }
 
+    const visuals = {
+        backgroundType: "color",
+        backgroundColor: "#000000",
+        backgroundImage: null,
+        backgroundVideo: null,
+        fit: "cover",
+        position: "center",
+        ...project.visuals,
+    };
+
     const projectToSave = {
         ...project,
 
-        // Files are stored separately in IndexedDB.
+        // Binary files are stored separately in IndexedDB.
         audioFile: null,
 
         audioMetadata: project.audioFile
@@ -62,9 +78,38 @@ export function saveProjectMetadata(project) {
                 name: project.audioFile.name,
                 size: project.audioFile.size,
                 type: project.audioFile.type,
-                lastModified: project.audioFile.lastModified,
+                lastModified:
+                    project.audioFile.lastModified,
             }
             : null,
+
+        visuals: {
+            ...visuals,
+
+            // Do not put the actual image File/Blob
+            // into localStorage.
+            backgroundImage: null,
+
+            backgroundImageMetadata:
+                visuals.backgroundImage
+                    ? {
+                        name:
+                            visuals.backgroundImage.name ??
+                            "Background image",
+                        size:
+                            visuals.backgroundImage.size,
+                        type:
+                            visuals.backgroundImage.type,
+                        lastModified:
+                            visuals.backgroundImage
+                                .lastModified ?? null,
+                    }
+                    : null,
+
+            // Future video files should also live in
+            // IndexedDB rather than localStorage.
+            backgroundVideo: null,
+        },
 
         updatedAt: new Date().toISOString(),
     };
@@ -95,7 +140,8 @@ export async function saveProjectAudio(
             ASSET_STORE_NAME
         );
 
-        const storageKey = getAudioStorageKey(projectId);
+        const storageKey =
+            getAudioStorageKey(projectId);
 
         if (audioFile) {
             store.put(audioFile, storageKey);
@@ -110,14 +156,76 @@ export async function saveProjectAudio(
         transaction.onerror = () => {
             reject(
                 transaction.error ??
-                new Error("Could not save the audio file.")
+                new Error(
+                    "Could not save the audio file."
+                )
             );
         };
 
         transaction.onabort = () => {
             reject(
                 transaction.error ??
-                new Error("Audio storage was interrupted.")
+                new Error(
+                    "Audio storage was interrupted."
+                )
+            );
+        };
+    });
+
+    database.close();
+}
+
+export async function saveProjectBackgroundImage(
+    projectId,
+    backgroundImage
+) {
+    if (!projectId) {
+        return;
+    }
+
+    const database = await openDatabase();
+
+    await new Promise((resolve, reject) => {
+        const transaction = database.transaction(
+            ASSET_STORE_NAME,
+            "readwrite"
+        );
+
+        const store = transaction.objectStore(
+            ASSET_STORE_NAME
+        );
+
+        const storageKey =
+            getBackgroundImageStorageKey(projectId);
+
+        if (backgroundImage) {
+            store.put(
+                backgroundImage,
+                storageKey
+            );
+        } else {
+            store.delete(storageKey);
+        }
+
+        transaction.oncomplete = () => {
+            resolve();
+        };
+
+        transaction.onerror = () => {
+            reject(
+                transaction.error ??
+                new Error(
+                    "Could not save the background image."
+                )
+            );
+        };
+
+        transaction.onabort = () => {
+            reject(
+                transaction.error ??
+                new Error(
+                    "Background image storage was interrupted."
+                )
             );
         };
     });
@@ -134,27 +242,33 @@ async function loadProjectAudio(projectId) {
 
     const audioFile = await new Promise(
         (resolve, reject) => {
-            const transaction = database.transaction(
-                ASSET_STORE_NAME,
-                "readonly"
-            );
+            const transaction =
+                database.transaction(
+                    ASSET_STORE_NAME,
+                    "readonly"
+                );
 
-            const store = transaction.objectStore(
-                ASSET_STORE_NAME
-            );
+            const store =
+                transaction.objectStore(
+                    ASSET_STORE_NAME
+                );
 
             const request = store.get(
                 getAudioStorageKey(projectId)
             );
 
             request.onsuccess = () => {
-                resolve(request.result ?? null);
+                resolve(
+                    request.result ?? null
+                );
             };
 
             request.onerror = () => {
                 reject(
                     request.error ??
-                    new Error("Could not restore the audio file.")
+                    new Error(
+                        "Could not restore the audio file."
+                    )
                 );
             };
         }
@@ -165,27 +279,87 @@ async function loadProjectAudio(projectId) {
     return audioFile;
 }
 
+async function loadProjectBackgroundImage(
+    projectId
+) {
+    if (!projectId) {
+        return null;
+    }
+
+    const database = await openDatabase();
+
+    const backgroundImage =
+        await new Promise((resolve, reject) => {
+            const transaction =
+                database.transaction(
+                    ASSET_STORE_NAME,
+                    "readonly"
+                );
+
+            const store =
+                transaction.objectStore(
+                    ASSET_STORE_NAME
+                );
+
+            const request = store.get(
+                getBackgroundImageStorageKey(
+                    projectId
+                )
+            );
+
+            request.onsuccess = () => {
+                resolve(
+                    request.result ?? null
+                );
+            };
+
+            request.onerror = () => {
+                reject(
+                    request.error ??
+                    new Error(
+                        "Could not restore the background image."
+                    )
+                );
+            };
+        });
+
+    database.close();
+
+    return backgroundImage;
+}
+
 export async function loadSavedProject() {
-    const savedProjectJson = localStorage.getItem(
-        PROJECT_STORAGE_KEY
-    );
+    const savedProjectJson =
+        localStorage.getItem(
+            PROJECT_STORAGE_KEY
+        );
 
     if (!savedProjectJson) {
         return null;
     }
 
     try {
-        const savedProject = JSON.parse(savedProjectJson);
+        const savedProject =
+            JSON.parse(savedProjectJson);
 
-        const audioFile = await loadProjectAudio(
-            savedProject.id
-        );
+        const [
+            audioFile,
+            backgroundImage,
+        ] = await Promise.all([
+            loadProjectAudio(savedProject.id),
+            loadProjectBackgroundImage(
+                savedProject.id
+            ),
+        ]);
 
         return {
             ...savedProject,
+
             audioFile,
 
-            lyrics: Array.isArray(savedProject.lyrics)
+            lyrics: Array.isArray(
+                savedProject.lyrics
+            )
                 ? savedProject.lyrics
                 : [],
 
@@ -199,19 +373,27 @@ export async function loadSavedProject() {
                 glow: false,
                 position: "bottom",
             },
-            animation: savedProject.animation ?? {
-                intro: "fade",
-                introDuration: 0.3,
-                outro: "fade",
-                outroDuration: 0.3,
-            },
-            visuals: savedProject.visuals ?? {
+
+            animation:
+                savedProject.animation ?? {
+                    intro: "fade",
+                    introDuration: 0.3,
+                    outro: "fade",
+                    outroDuration: 0.3,
+                },
+
+            visuals: {
                 backgroundType: "color",
                 backgroundColor: "#000000",
                 backgroundImage: null,
                 backgroundVideo: null,
                 fit: "cover",
                 position: "center",
+                ...(savedProject.visuals ?? {}),
+
+                // Replace the metadata placeholder
+                // with the real Blob/File from IndexedDB.
+                backgroundImage,
             },
         };
     } catch (error) {
@@ -225,18 +407,22 @@ export async function loadSavedProject() {
 }
 
 export async function deleteSavedProject() {
-    const savedProjectJson = localStorage.getItem(
+    const savedProjectJson =
+        localStorage.getItem(
+            PROJECT_STORAGE_KEY
+        );
+
+    localStorage.removeItem(
         PROJECT_STORAGE_KEY
     );
-
-    localStorage.removeItem(PROJECT_STORAGE_KEY);
 
     if (!savedProjectJson) {
         return;
     }
 
     try {
-        const savedProject = JSON.parse(savedProjectJson);
+        const savedProject =
+            JSON.parse(savedProjectJson);
 
         if (!savedProject.id) {
             return;
@@ -244,33 +430,45 @@ export async function deleteSavedProject() {
 
         const database = await openDatabase();
 
-        await new Promise((resolve, reject) => {
-            const transaction = database.transaction(
-                ASSET_STORE_NAME,
-                "readwrite"
-            );
+        await new Promise(
+            (resolve, reject) => {
+                const transaction =
+                    database.transaction(
+                        ASSET_STORE_NAME,
+                        "readwrite"
+                    );
 
-            const store = transaction.objectStore(
-                ASSET_STORE_NAME
-            );
+                const store =
+                    transaction.objectStore(
+                        ASSET_STORE_NAME
+                    );
 
-            store.delete(
-                getAudioStorageKey(savedProject.id)
-            );
-
-            transaction.oncomplete = () => {
-                resolve();
-            };
-
-            transaction.onerror = () => {
-                reject(
-                    transaction.error ??
-                    new Error(
-                        "Could not delete the saved audio file."
+                store.delete(
+                    getAudioStorageKey(
+                        savedProject.id
                     )
                 );
-            };
-        });
+
+                store.delete(
+                    getBackgroundImageStorageKey(
+                        savedProject.id
+                    )
+                );
+
+                transaction.oncomplete = () => {
+                    resolve();
+                };
+
+                transaction.onerror = () => {
+                    reject(
+                        transaction.error ??
+                        new Error(
+                            "Could not delete the saved project assets."
+                        )
+                    );
+                };
+            }
+        );
 
         database.close();
     } catch (error) {

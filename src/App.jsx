@@ -5,6 +5,7 @@ import {
   hasSavedProject,
   loadSavedProject,
   saveProjectAudio,
+  saveProjectBackgroundImage,
   saveProjectMetadata,
 } from "./utils/projectStorage";
 import "./App.css";
@@ -33,7 +34,7 @@ function createNewProject() {
       outro: "fade",
       outroDuration: 0.3,
     },
-        visuals: {
+    visuals: {
       backgroundType: "color",
       backgroundColor: "#000000",
       backgroundImage: null,
@@ -59,6 +60,28 @@ function App() {
 
   const previousAudioFileRef = useRef(null);
   const previousProjectIdRef = useRef(null);
+
+
+  useEffect(() => {
+    if (!currentProject || isRestoringProject) {
+      return;
+    }
+
+    saveProjectBackgroundImage(
+      currentProject.id,
+      currentProject.visuals?.backgroundImage ?? null
+    ).catch((error) => {
+      console.error(
+        "Lyric Lab could not autosave the background image:",
+        error
+      );
+    });
+  }, [
+    currentProject?.id,
+    currentProject?.visuals?.backgroundImage,
+    isRestoringProject,
+  ]);
+
 
   useEffect(() => {
     let isCancelled = false;

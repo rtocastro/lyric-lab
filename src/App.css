@@ -2816,3 +2816,15 @@ button {
   min-height: 260px;
   height: 260px;
 }
+
+.visuals-panel__asset-name {
+  display: block;
+  margin-top: 8px;
+  overflow: hidden;
+
+  color: var(--text-muted);
+  font-size: 0.7rem;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
