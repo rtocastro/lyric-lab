@@ -1,8 +1,10 @@
 import Button from "./Button";
 
+
 function Topbar({
   projectTitle,
   onReturnHome,
+  onExport,
 }) {
   return (
     <header className="topbar">
@@ -33,7 +35,10 @@ function Topbar({
           Save
         </Button>
 
-        <Button disabled>
+        <Button
+          type="button"
+          onClick={onExport}
+        >
           Export
         </Button>
       </div>

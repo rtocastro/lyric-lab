@@ -14,6 +14,7 @@ import PreviewCanvas from "../features/preview/PreviewCanvas";
 import StylePanel from "../features/style/StylePanel";
 import AnimationPanel from "../features/animation/AnimationPanel";
 import VisualsPanel from "../features/visuals/VisualsPanel";
+import ExportCanvas from "../features/export/ExportCanvas";
 import { getActiveLyric } from "../utils/getActiveLyric";
 
 
@@ -976,6 +977,31 @@ function EditorPage({
             );
         }
 
+        if (activeSection === "export") {
+            return (
+                <Panel title="Export">
+                    <div className="export-panel">
+                        <div className="export-panel__header">
+                            <div>
+                                <strong>Video Export</strong>
+                                <span>
+                                    1920 × 1080 · 30 FPS
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="export-panel__preview">
+                            <ExportCanvas
+                                width={1920}
+                                height={1080}
+                                visuals={project.visuals}
+                            />
+                        </div>
+                    </div>
+                </Panel>
+            );
+        }
+
         return renderPreviewPanel();
     };
 
@@ -985,7 +1011,11 @@ function EditorPage({
             activeSection={activeSection}
             onSectionChange={setActiveSection}
             onReturnHome={onReturnHome}
+            onExport={() =>
+                setActiveSection("export")
+            }
         >
+
             {audioTransport.audioElement}
 
             <div className="editor-grid">
@@ -1281,6 +1311,9 @@ function EditorPage({
                                 </div>
                             </div>
                         )}
+
+
+
                     </Panel>
                 </aside>
 

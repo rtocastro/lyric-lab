@@ -2842,3 +2842,45 @@ button {
 
   pointer-events: none;
 }
+
+.export-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+
+  border: 1px solid var(--border);
+  border-radius: 8px;
+
+  background: #000000;
+}
+
+.export-panel {
+  display: grid;
+  gap: 18px;
+  min-height: 0;
+}
+
+.export-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.export-panel__header > div {
+  display: grid;
+  gap: 4px;
+}
+
+.export-panel__header strong {
+  color: var(--text-primary);
+}
+
+.export-panel__header span {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+
+.export-panel__preview {
+  width: min(100%, 960px);
+  margin: 0 auto;
+}

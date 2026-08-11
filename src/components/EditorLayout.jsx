@@ -6,6 +6,7 @@ function EditorLayout({
   activeSection,
   onSectionChange,
   onReturnHome,
+  onExport,
   children,
 }) {
   return (
@@ -13,6 +14,7 @@ function EditorLayout({
       <Topbar
         projectTitle={projectTitle}
         onReturnHome={onReturnHome}
+        onExport={onExport}
       />
 
       <div className="editor__body">

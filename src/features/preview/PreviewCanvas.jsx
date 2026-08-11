@@ -4,6 +4,7 @@ import {
     useState,
 } from "react";
 import useAutoFitText from "./useAutoFitText";
+import getLyricAnimationState from "./getLyricAnimationState";
 
 
 function PreviewCanvas({
@@ -108,58 +109,19 @@ function PreviewCanvas({
         currentVisuals.backgroundVideo,
     ]);
 
-    const hasLyricTiming =
-        Number.isFinite(lyricStart) &&
-        Number.isFinite(lyricEnd) &&
-        lyricEnd > lyricStart;
-
-    const timeSinceLyricStart = hasLyricTiming
-        ? Math.max(0, currentTime - lyricStart)
-        : 0;
-
-    const timeUntilLyricEnd = hasLyricTiming
-        ? Math.max(0, lyricEnd - currentTime)
-        : Infinity;
-
-    const isInIntro =
-        hasLyricTiming &&
-        timeSinceLyricStart <
-        currentAnimation.introDuration;
-
-    const isInOutro =
-        hasLyricTiming &&
-        timeUntilLyricEnd <=
-        currentAnimation.outroDuration;
-
-    const clamp01 = (value) =>
-        Math.min(Math.max(value, 0), 1);
-
-    const introProgress =
-        hasLyricTiming &&
-            currentAnimation.introDuration > 0
-            ? clamp01(
-                timeSinceLyricStart /
-                currentAnimation.introDuration
-            )
-            : 1;
-
-    const outroProgress =
-        hasLyricTiming &&
-            currentAnimation.outroDuration > 0
-            ? clamp01(
-                1 -
-                timeUntilLyricEnd /
-                currentAnimation.outroDuration
-            )
-            : 0;
-
-    const activeAnimationDuration = isInOutro
-        ? currentAnimation.outroDuration
-        : currentAnimation.introDuration;
-
-    const activeAnimationProgress = isInOutro
-        ? outroProgress
-        : introProgress;
+    const {
+        isInIntro,
+        isInOutro,
+        introProgress,
+        outroProgress,
+        activeAnimationProgress,
+        activeAnimationDuration,
+    } = getLyricAnimationState({
+        currentTime,
+        lyricStart,
+        lyricEnd,
+        animation: currentAnimation,
+    });
 
     const safeAreaRef = useRef(null);
     const lyricRef = useRef(null);
