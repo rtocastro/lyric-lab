@@ -74,7 +74,17 @@ function VisualsPanel({
 
                             <button
                                 type="button"
-                                disabled
+                                className={
+                                    currentVisuals.backgroundType === "video"
+                                        ? "is-active"
+                                        : ""
+                                }
+                                onClick={() =>
+                                    updateVisuals(
+                                        "backgroundType",
+                                        "video"
+                                    )
+                                }
                             >
                                 Video
                             </button>
@@ -116,6 +126,70 @@ function VisualsPanel({
                                         {currentVisuals.backgroundImage.name}
                                     </span>
                                 )}
+
+                                <div className="form-group">
+                                    <label>Image Fit</label>
+
+                                    <div className="visuals-panel__segmented">
+                                        <button
+                                            type="button"
+                                            className={
+                                                currentVisuals.fit === "cover"
+                                                    ? "is-active"
+                                                    : ""
+                                            }
+                                            onClick={() =>
+                                                updateVisuals("fit", "cover")
+                                            }
+                                        >
+                                            Cover
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            className={
+                                                currentVisuals.fit === "contain"
+                                                    ? "is-active"
+                                                    : ""
+                                            }
+                                            onClick={() =>
+                                                updateVisuals("fit", "contain")
+                                            }
+                                        >
+                                            Contain
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Image Position</label>
+
+                                    <div className="visuals-panel__segmented">
+                                        {[
+                                            ["top", "Top"],
+                                            ["center", "Center"],
+                                            ["bottom", "Bottom"],
+                                        ].map(([value, label]) => (
+                                            <button
+                                                key={value}
+                                                type="button"
+                                                className={
+                                                    currentVisuals.position === value
+                                                        ? "is-active"
+                                                        : ""
+                                                }
+                                                onClick={() =>
+                                                    updateVisuals(
+                                                        "position",
+                                                        value
+                                                    )
+                                                }
+                                            >
+                                                {label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
                         )}
 
@@ -138,6 +212,39 @@ function VisualsPanel({
                                 {currentVisuals.backgroundColor}
                             </span>
                         </div>
+
+                        {currentVisuals.backgroundType === "video" && (
+                            <div className="form-group">
+                                <label htmlFor="visuals-background-video">
+                                    Background Video
+                                </label>
+
+                                <input
+                                    id="visuals-background-video"
+                                    type="file"
+                                    accept="video/*"
+                                    onChange={(event) => {
+                                        const file =
+                                            event.target.files?.[0];
+
+                                        if (!file) {
+                                            return;
+                                        }
+
+                                        updateVisuals(
+                                            "backgroundVideo",
+                                            file
+                                        );
+                                    }}
+                                />
+
+                                {currentVisuals.backgroundVideo && (
+                                    <span className="visuals-panel__asset-name">
+                                        {currentVisuals.backgroundVideo.name}
+                                    </span>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </section>
             </div>

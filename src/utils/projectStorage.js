@@ -46,6 +46,67 @@ function getBackgroundImageStorageKey(projectId) {
     return `background-image:${projectId}`;
 }
 
+function getBackgroundVideoStorageKey(projectId) {
+    return `background-video:${projectId}`;
+}
+
+
+export async function saveProjectBackgroundVideo(
+    projectId,
+    backgroundVideo
+) {
+    if (!projectId) {
+        return;
+    }
+
+    const database = await openDatabase();
+
+    await new Promise((resolve, reject) => {
+        const transaction = database.transaction(
+            ASSET_STORE_NAME,
+            "readwrite"
+        );
+
+        const store = transaction.objectStore(
+            ASSET_STORE_NAME
+        );
+
+        const storageKey =
+            getBackgroundVideoStorageKey(projectId);
+
+        if (backgroundVideo) {
+            store.put(
+                backgroundVideo,
+                storageKey
+            );
+        } else {
+            store.delete(storageKey);
+        }
+
+        transaction.oncomplete = resolve;
+
+        transaction.onerror = () => {
+            reject(
+                transaction.error ??
+                new Error(
+                    "Could not save the background video."
+                )
+            );
+        };
+
+        transaction.onabort = () => {
+            reject(
+                transaction.error ??
+                new Error(
+                    "Background video storage was interrupted."
+                )
+            );
+        };
+    });
+
+    database.close();
+}
+
 export function hasSavedProject() {
     return Boolean(
         localStorage.getItem(PROJECT_STORAGE_KEY)
@@ -118,6 +179,56 @@ export function saveProjectMetadata(project) {
         PROJECT_STORAGE_KEY,
         JSON.stringify(projectToSave)
     );
+}
+
+
+async function loadProjectBackgroundVideo(
+    projectId
+) {
+    if (!projectId) {
+        return null;
+    }
+
+    const database = await openDatabase();
+
+    const backgroundVideo =
+        await new Promise((resolve, reject) => {
+            const transaction =
+                database.transaction(
+                    ASSET_STORE_NAME,
+                    "readonly"
+                );
+
+            const store =
+                transaction.objectStore(
+                    ASSET_STORE_NAME
+                );
+
+            const request = store.get(
+                getBackgroundVideoStorageKey(
+                    projectId
+                )
+            );
+
+            request.onsuccess = () => {
+                resolve(
+                    request.result ?? null
+                );
+            };
+
+            request.onerror = () => {
+                reject(
+                    request.error ??
+                    new Error(
+                        "Could not restore the background video."
+                    )
+                );
+            };
+        });
+
+    database.close();
+
+    return backgroundVideo;
 }
 
 export async function saveProjectAudio(
@@ -345,9 +456,13 @@ export async function loadSavedProject() {
         const [
             audioFile,
             backgroundImage,
+            backgroundVideo,
         ] = await Promise.all([
             loadProjectAudio(savedProject.id),
             loadProjectBackgroundImage(
+                savedProject.id
+            ),
+            loadProjectBackgroundVideo(
                 savedProject.id
             ),
         ]);
@@ -394,6 +509,7 @@ export async function loadSavedProject() {
                 // Replace the metadata placeholder
                 // with the real Blob/File from IndexedDB.
                 backgroundImage,
+                backgroundVideo,
             },
         };
     } catch (error) {

@@ -7,6 +7,7 @@ import {
   saveProjectAudio,
   saveProjectBackgroundImage,
   saveProjectMetadata,
+  saveProjectBackgroundVideo,
 } from "./utils/projectStorage";
 import "./App.css";
 
@@ -81,6 +82,26 @@ function App() {
     currentProject?.visuals?.backgroundImage,
     isRestoringProject,
   ]);
+
+  useEffect(() => {
+    if (!currentProject || isRestoringProject) {
+        return;
+    }
+
+    saveProjectBackgroundVideo(
+        currentProject.id,
+        currentProject.visuals?.backgroundVideo ?? null
+    ).catch((error) => {
+        console.error(
+            "Lyric Lab could not autosave the background video:",
+            error
+        );
+    });
+}, [
+    currentProject?.id,
+    currentProject?.visuals?.backgroundVideo,
+    isRestoringProject,
+]);
 
 
   useEffect(() => {

@@ -5,6 +5,7 @@ import {
 } from "react";
 import useAutoFitText from "./useAutoFitText";
 
+
 function PreviewCanvas({
     text,
     lineLabel,
@@ -54,6 +55,9 @@ function PreviewCanvas({
     const [backgroundImageUrl, setBackgroundImageUrl] =
         useState("");
 
+    const [backgroundVideoUrl, setBackgroundVideoUrl] =
+        useState("");
+
     useEffect(() => {
         const backgroundImage =
             currentVisuals.backgroundImage;
@@ -77,6 +81,31 @@ function PreviewCanvas({
     }, [
         currentVisuals.backgroundType,
         currentVisuals.backgroundImage,
+    ]);
+
+    useEffect(() => {
+        const backgroundVideo =
+            currentVisuals.backgroundVideo;
+
+        if (
+            currentVisuals.backgroundType !== "video" ||
+            !(backgroundVideo instanceof Blob)
+        ) {
+            setBackgroundVideoUrl("");
+            return undefined;
+        }
+
+        const objectUrl =
+            URL.createObjectURL(backgroundVideo);
+
+        setBackgroundVideoUrl(objectUrl);
+
+        return () => {
+            URL.revokeObjectURL(objectUrl);
+        };
+    }, [
+        currentVisuals.backgroundType,
+        currentVisuals.backgroundVideo,
     ]);
 
     const hasLyricTiming =
@@ -134,6 +163,62 @@ function PreviewCanvas({
 
     const safeAreaRef = useRef(null);
     const lyricRef = useRef(null);
+    const backgroundVideoRef = useRef(null);
+
+    useEffect(() => {
+        const video = backgroundVideoRef.current;
+
+        if (
+            !video ||
+            currentVisuals.backgroundType !== "video" ||
+            !backgroundVideoUrl
+        ) {
+            return;
+        }
+
+        if (!Number.isFinite(video.duration) || video.duration <= 0) {
+            return;
+        }
+
+        const targetTime =
+            currentTime % video.duration;
+
+        const drift =
+            Math.abs(video.currentTime - targetTime);
+
+        if (drift > 0.08) {
+            video.currentTime = targetTime;
+        }
+    }, [
+        currentTime,
+        currentVisuals.backgroundType,
+        backgroundVideoUrl,
+    ]);
+
+    useEffect(() => {
+    const video = backgroundVideoRef.current;
+
+    if (
+        !video ||
+        currentVisuals.backgroundType !== "video" ||
+        !backgroundVideoUrl
+    ) {
+        return;
+    }
+
+    if (isPlaying) {
+        video.play().catch(() => {
+            // Some browsers may briefly reject playback
+            // while the source is still loading.
+        });
+    } else {
+        video.pause();
+    }
+}, [
+    isPlaying,
+    currentVisuals.backgroundType,
+    backgroundVideoUrl,
+]);
 
     const renderFontSize = useAutoFitText({
         text,
@@ -200,6 +285,25 @@ function PreviewCanvas({
                     backgroundRepeat: "no-repeat",
                 }}
             >
+                {currentVisuals.backgroundType === "video" &&
+                    backgroundVideoUrl && (
+                        <video
+                            ref={backgroundVideoRef}
+                            className="preview__background-video"
+                            src={backgroundVideoUrl}
+                            muted
+                            playsInline
+                            preload="auto"
+                            onLoadedMetadata={(event) => {
+                                const video = event.currentTarget;
+
+                                if (Number.isFinite(video.duration) && video.duration > 0) {
+                                    video.currentTime = Math.min(0.05, video.duration);
+                                }
+                            }}
+                        />
+                    )}
+
                 {showHud && (
                     <div className="preview__hud preview__hud--top">
                         <span>Live lyric preview</span>
