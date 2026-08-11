@@ -4,16 +4,24 @@ import {
     useState,
 } from "react";
 import getMediaDrawRect from "./getMediaDrawRect";
+import drawCanvasLyric from "./drawCanvasLyric";
+import getLyricAnimationState from "../preview/getLyricAnimationState";
 
 function ExportCanvas({
     width = 1920,
     height = 1080,
     visuals,
     currentTime = 0,
+    text = "",
+    style,
+    animation,
+    lyricStart = null,
+    lyricEnd = null,
 }) {
     const canvasRef = useRef(null);
     const imageRef = useRef(null);
     const videoRef = useRef(null);
+
 
     const [backgroundVideoUrl, setBackgroundVideoUrl] =
         useState("");
@@ -27,6 +35,14 @@ function ExportCanvas({
         position: "center",
         ...visuals,
     };
+
+    const animationState =
+        getLyricAnimationState({
+            currentTime,
+            lyricStart,
+            lyricEnd,
+            animation,
+        });
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -63,16 +79,14 @@ function ExportCanvas({
             canvas.height
         );
 
-        context.fillStyle = "#FFFFFF";
-        context.font = "700 72px Arial";
-        context.textAlign = "center";
-        context.textBaseline = "middle";
-
-        context.fillText(
-            "Lyric Lab Export Test",
-            canvas.width / 2,
-            canvas.height / 2
-        );
+        drawCanvasLyric({
+            context,
+            canvas,
+            text,
+            style,
+            animation,
+            animationState,
+        });
     }, [
         width,
         height,
@@ -145,17 +159,14 @@ function ExportCanvas({
                 rect.height
             );
 
-            // Temporary export marker.
-            context.fillStyle = "#FFFFFF";
-            context.font = "700 72px Arial";
-            context.textAlign = "center";
-            context.textBaseline = "middle";
-
-            context.fillText(
-                "Lyric Lab Export Test",
-                canvas.width / 2,
-                canvas.height / 2
-            );
+            drawCanvasLyric({
+                context,
+                canvas,
+                text,
+                style,
+                animation,
+                animationState,
+            });
         };
 
         image.src = objectUrl;
@@ -261,16 +272,14 @@ function ExportCanvas({
                 rect.height
             );
 
-            context.fillStyle = "#FFFFFF";
-            context.font = "700 72px Arial";
-            context.textAlign = "center";
-            context.textBaseline = "middle";
-
-            context.fillText(
-                "Lyric Lab Export Test",
-                canvas.width / 2,
-                canvas.height / 2
-            );
+            drawCanvasLyric({
+                context,
+                canvas,
+                text,
+                style,
+                animation,
+                animationState,
+            });
         };
 
         const seekToCurrentTime = () => {
@@ -348,6 +357,8 @@ function ExportCanvas({
         currentVisuals.position,
         width,
         height,
+        text,
+        style,
     ]);
     return (
         <>

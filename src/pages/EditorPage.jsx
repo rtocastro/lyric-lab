@@ -996,6 +996,11 @@ function EditorPage({
                                 height={1080}
                                 visuals={project.visuals}
                                 currentTime={audioTransport.visualTime}
+                                text={activeLyric?.text ?? ""}
+                                style={project.style}
+                                animation={activeLyricAnimation}
+                                lyricStart={activeLyric?.start ?? null}
+                                lyricEnd={activeLyric?.end ?? null}
                             />
                         </div>
                     </div>
