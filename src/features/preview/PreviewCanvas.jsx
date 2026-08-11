@@ -196,29 +196,29 @@ function PreviewCanvas({
     ]);
 
     useEffect(() => {
-    const video = backgroundVideoRef.current;
+        const video = backgroundVideoRef.current;
 
-    if (
-        !video ||
-        currentVisuals.backgroundType !== "video" ||
-        !backgroundVideoUrl
-    ) {
-        return;
-    }
+        if (
+            !video ||
+            currentVisuals.backgroundType !== "video" ||
+            !backgroundVideoUrl
+        ) {
+            return;
+        }
 
-    if (isPlaying) {
-        video.play().catch(() => {
-            // Some browsers may briefly reject playback
-            // while the source is still loading.
-        });
-    } else {
-        video.pause();
-    }
-}, [
-    isPlaying,
-    currentVisuals.backgroundType,
-    backgroundVideoUrl,
-]);
+        if (isPlaying) {
+            video.play().catch(() => {
+                // Some browsers may briefly reject playback
+                // while the source is still loading.
+            });
+        } else {
+            video.pause();
+        }
+    }, [
+        isPlaying,
+        currentVisuals.backgroundType,
+        backgroundVideoUrl,
+    ]);
 
     const renderFontSize = useAutoFitText({
         text,
@@ -294,6 +294,10 @@ function PreviewCanvas({
                             muted
                             playsInline
                             preload="auto"
+                            style={{
+                                objectFit: currentVisuals.fit,
+                                objectPosition: currentVisuals.position,
+                            }}
                             onLoadedMetadata={(event) => {
                                 const video = event.currentTarget;
 

@@ -565,12 +565,6 @@ export async function deleteSavedProject() {
                     )
                 );
 
-                store.delete(
-                    getBackgroundImageStorageKey(
-                        savedProject.id
-                    )
-                );
-
                 transaction.oncomplete = () => {
                     resolve();
                 };

@@ -85,23 +85,23 @@ function App() {
 
   useEffect(() => {
     if (!currentProject || isRestoringProject) {
-        return;
+      return;
     }
 
     saveProjectBackgroundVideo(
-        currentProject.id,
-        currentProject.visuals?.backgroundVideo ?? null
+      currentProject.id,
+      currentProject.visuals?.backgroundVideo ?? null
     ).catch((error) => {
-        console.error(
-            "Lyric Lab could not autosave the background video:",
-            error
-        );
+      console.error(
+        "Lyric Lab could not autosave the background video:",
+        error
+      );
     });
-}, [
+  }, [
     currentProject?.id,
     currentProject?.visuals?.backgroundVideo,
     isRestoringProject,
-]);
+  ]);
 
 
   useEffect(() => {
