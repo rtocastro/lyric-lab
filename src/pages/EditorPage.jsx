@@ -995,6 +995,7 @@ function EditorPage({
                                 width={1920}
                                 height={1080}
                                 visuals={project.visuals}
+                                currentTime={audioTransport.visualTime}
                             />
                         </div>
                     </div>
