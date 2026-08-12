@@ -25,6 +25,8 @@ function ExportCanvas({
 
     const [backgroundVideoUrl, setBackgroundVideoUrl] =
         useState("");
+    const [imageReady, setImageReady] =
+        useState(false);
 
     const currentVisuals = {
         backgroundType: "color",
@@ -45,6 +47,12 @@ function ExportCanvas({
         });
 
     useEffect(() => {
+        if (
+            currentVisuals.backgroundType !== "color"
+        ) {
+            return;
+        }
+
         const canvas = canvasRef.current;
 
         if (!canvas) {
@@ -68,9 +76,7 @@ function ExportCanvas({
         );
 
         context.fillStyle =
-            currentVisuals.backgroundType === "color"
-                ? currentVisuals.backgroundColor
-                : "#000000";
+            currentVisuals.backgroundColor;
 
         context.fillRect(
             0,
@@ -92,6 +98,10 @@ function ExportCanvas({
         height,
         currentVisuals.backgroundType,
         currentVisuals.backgroundColor,
+        text,
+        style,
+        animation,
+        currentTime,
     ]);
 
     useEffect(() => {
@@ -99,18 +109,9 @@ function ExportCanvas({
             currentVisuals.backgroundType !== "image" ||
             !(currentVisuals.backgroundImage instanceof Blob)
         ) {
-            return undefined;
-        }
+            imageRef.current = null;
+            setImageReady(false);
 
-        const canvas = canvasRef.current;
-
-        if (!canvas) {
-            return undefined;
-        }
-
-        const context = canvas.getContext("2d");
-
-        if (!context) {
             return undefined;
         }
 
@@ -121,68 +122,117 @@ function ExportCanvas({
         const image = new Image();
 
         imageRef.current = image;
+        setImageReady(false);
 
         image.onload = () => {
-            const rect = getMediaDrawRect({
-                sourceWidth: image.naturalWidth,
-                sourceHeight: image.naturalHeight,
-                canvasWidth: canvas.width,
-                canvasHeight: canvas.height,
-                fit: currentVisuals.fit,
-                position: currentVisuals.position,
-            });
+            setImageReady(true);
+        };
 
-            if (!rect) {
-                return;
-            }
-
-            context.clearRect(
-                0,
-                0,
-                canvas.width,
-                canvas.height
+        image.onerror = () => {
+            console.error(
+                "Export background image could not load."
             );
 
-            context.fillStyle = "#000000";
-            context.fillRect(
-                0,
-                0,
-                canvas.width,
-                canvas.height
-            );
-
-            context.drawImage(
-                image,
-                rect.x,
-                rect.y,
-                rect.width,
-                rect.height
-            );
-
-            drawCanvasLyric({
-                context,
-                canvas,
-                text,
-                style,
-                animation,
-                animationState,
-            });
+            setImageReady(false);
         };
 
         image.src = objectUrl;
 
         return () => {
-            imageRef.current = null;
             image.onload = null;
+            image.onerror = null;
+
+            if (imageRef.current === image) {
+                imageRef.current = null;
+            }
+
             URL.revokeObjectURL(objectUrl);
         };
     }, [
         currentVisuals.backgroundType,
         currentVisuals.backgroundImage,
+    ]);
+
+
+
+    useEffect(() => {
+        if (
+            currentVisuals.backgroundType !== "image" ||
+            !imageReady
+        ) {
+            return;
+        }
+
+
+        const canvas = canvasRef.current;
+        const image = imageRef.current;
+
+        if (!canvas || !image) {
+            return;
+        }
+
+        const context = canvas.getContext("2d");
+
+        if (!context) {
+            return;
+        }
+
+        const rect = getMediaDrawRect({
+            sourceWidth: image.naturalWidth,
+            sourceHeight: image.naturalHeight,
+            canvasWidth: canvas.width,
+            canvasHeight: canvas.height,
+            fit: currentVisuals.fit,
+            position: currentVisuals.position,
+        });
+
+        if (!rect) {
+            return;
+        }
+
+        context.clearRect(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+        context.fillStyle = "#000000";
+
+        context.fillRect(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+        context.drawImage(
+            image,
+            rect.x,
+            rect.y,
+            rect.width,
+            rect.height
+        );
+
+        drawCanvasLyric({
+            context,
+            canvas,
+            text,
+            style,
+            animation,
+            animationState,
+        });
+    }, [
+        imageReady,
+        currentTime,
+        currentVisuals.backgroundType,
         currentVisuals.fit,
         currentVisuals.position,
         width,
         height,
+        text,
+        style,
+        animation,
     ]);
 
     useEffect(() => {
@@ -359,6 +409,7 @@ function ExportCanvas({
         height,
         text,
         style,
+        animation,
     ]);
     return (
         <>

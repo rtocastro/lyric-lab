@@ -5,6 +5,8 @@ function drawCanvasLyric({
     canvas,
     text,
     style,
+    animation,
+    animationState,
 }) {
     if (
         !context ||
@@ -28,7 +30,7 @@ function drawCanvasLyric({
     };
 
     const renderedText =
-    text.toUpperCase();
+        text.toUpperCase();
 
     const DESIGN_WIDTH = 720;
 
@@ -57,6 +59,168 @@ function drawCanvasLyric({
     });
 
     context.save();
+
+    let opacity = 1;
+
+    let scale = 1;
+    let translateX = 0;
+    let translateY = 0;
+    let blur = 0;
+
+    const introProgress =
+        animationState?.introProgress ?? 1;
+
+    const outroProgress =
+        animationState?.outroProgress ?? 0;
+
+    const easedIntroProgress =
+        1 -
+        Math.pow(
+            1 - introProgress,
+            2
+        );
+
+    if (
+        animationState?.isInIntro &&
+        animation?.intro === "fade"
+    ) {
+        opacity =
+            easedIntroProgress;
+    }
+
+
+    if (animationState?.isInIntro) {
+        switch (animation?.intro) {
+            case "pop": {
+                opacity = Math.min(
+                    introProgress / 0.7,
+                    1
+                );
+
+                if (introProgress < 0.7) {
+                    scale =
+                        0.72 +
+                        (1.08 - 0.72) *
+                        (introProgress / 0.7);
+                } else {
+                    scale =
+                        1.08 -
+                        0.08 *
+                        ((introProgress - 0.7) / 0.3);
+                }
+
+                break;
+            }
+
+            case "zoom":
+                opacity = easedIntroProgress;
+
+                scale =
+                    1.35 -
+                    0.35 * easedIntroProgress;
+                break;
+
+            case "slide-up":
+                opacity = easedIntroProgress;
+
+                translateY =
+                    32 *
+                    renderScale *
+                    (1 - easedIntroProgress);
+                break;
+
+            case "slide-down":
+                opacity = easedIntroProgress;
+
+                translateY =
+                    -32 *
+                    renderScale *
+                    (1 - easedIntroProgress);
+                break;
+
+            case "slide-left":
+                opacity = easedIntroProgress;
+
+                translateX =
+                    42 *
+                    renderScale *
+                    (1 - easedIntroProgress);
+                break;
+
+            case "slide-right":
+                opacity = easedIntroProgress;
+                translateX =
+                    -42 *
+                    renderScale *
+                    (1 - easedIntroProgress);
+                break;
+
+            case "blur":
+                opacity = easedIntroProgress;
+                blur =
+                    12 *
+                    renderScale *
+                    (1 - easedIntroProgress);
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    if (animationState?.isInOutro) {
+        switch (animation?.outro) {
+            case "shrink":
+                opacity =
+                    1 - outroProgress;
+
+                scale =
+                    1 -
+                    0.3 * outroProgress;
+                break;
+
+            case "blur":
+                opacity =
+                    1 - outroProgress;
+
+                blur =
+                    12 *
+                    renderScale *
+                    outroProgress;
+                break;
+
+            case "slide-left":
+                opacity =
+                    1 - outroProgress;
+
+                translateX =
+                    -48 *
+                    renderScale *
+                    outroProgress;
+                break;
+
+            case "slide-right":
+                opacity =
+                    1 - outroProgress;
+
+                translateX =
+                    48 *
+                    renderScale *
+                    outroProgress;
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    if (
+        animationState?.isInOutro &&
+        animation?.outro === "fade"
+    ) {
+        opacity =
+            1 - animationState.outroProgress;
+    }
 
     context.font =
         `700 ${fitted.fontSize}px ${currentStyle.fontFamily}`;
@@ -105,6 +269,29 @@ function drawCanvasLyric({
             break;
     }
 
+    context.globalAlpha = opacity;
+
+    context.translate(
+        canvas.width / 2 + translateX,
+        centerY + translateY
+    );
+
+    context.scale(
+        scale,
+        scale
+    );
+
+    context.translate(
+        -canvas.width / 2,
+        -centerY
+    );
+
+    context.filter =
+        blur > 0
+            ? `blur(${blur}px)`
+            : "none";
+
+
     const totalTextHeight =
         fitted.lines.length *
         fitted.lineHeight;
@@ -122,6 +309,7 @@ function drawCanvasLyric({
         shadowOffsetY = 0,
         drawStroke = false,
         drawFill = false,
+        drawShadowOnly = false,
     }) => {
         context.shadowColor = shadowColor;
         context.shadowBlur = shadowBlur;
@@ -133,6 +321,7 @@ function drawCanvasLyric({
                 firstLineY +
                 index * fitted.lineHeight;
 
+            // Outline
             if (
                 drawStroke &&
                 currentStyle.outlineWidth > 0
@@ -152,6 +341,32 @@ function drawCanvasLyric({
                 );
             }
 
+            // Glow/shadow without painting
+            // another visible copy of the glyph.
+            if (drawShadowOnly) {
+                const shadowDistance = 10000;
+
+                const originalShadowOffsetX =
+                    context.shadowOffsetX;
+
+                context.shadowOffsetX =
+                    originalShadowOffsetX +
+                    shadowDistance;
+
+                context.fillStyle =
+                    currentStyle.color;
+
+                context.fillText(
+                    line,
+                    x - shadowDistance,
+                    y
+                );
+
+                context.shadowOffsetX =
+                    originalShadowOffsetX;
+            }
+
+            // Normal visible text.
             if (drawFill) {
                 context.fillStyle =
                     currentStyle.color;
@@ -186,7 +401,7 @@ function drawCanvasLyric({
                 currentStyle.color,
             shadowBlur:
                 34 * renderScale,
-            drawFill: true,
+            drawShadowOnly: true,
         });
 
         drawLines({
@@ -194,7 +409,7 @@ function drawCanvasLyric({
                 currentStyle.color,
             shadowBlur:
                 18 * renderScale,
-            drawFill: true,
+            drawShadowOnly: true,
         });
 
         drawLines({
@@ -202,7 +417,7 @@ function drawCanvasLyric({
                 currentStyle.color,
             shadowBlur:
                 8 * renderScale,
-            drawFill: true,
+            drawShadowOnly: true,
         });
     }
 

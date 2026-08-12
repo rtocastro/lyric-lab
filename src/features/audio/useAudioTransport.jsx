@@ -108,7 +108,7 @@ function useAudioTransport(audioFile) {
 
     setCurrentTime(0);
     setIsPlaying(false);
-    setVisualTime(safeTime);
+    setVisualTime(0);
   }, []);
 
   useEffect(() => {
@@ -149,7 +149,14 @@ function useAudioTransport(audioFile) {
         setDuration(event.currentTarget.duration);
       }}
       onTimeUpdate={(event) => {
-        setCurrentTime(event.currentTarget.currentTime);
+        const nextTime =
+          event.currentTarget.currentTime;
+
+        setCurrentTime(nextTime);
+
+        if (!isPlaying) {
+          setVisualTime(nextTime);
+        }
       }}
       onPlay={() => {
         setIsPlaying(true);
@@ -160,7 +167,7 @@ function useAudioTransport(audioFile) {
       onEnded={() => {
         setIsPlaying(false);
         setCurrentTime(0);
-        setVisualTime(safeTime);
+        setVisualTime(0);
       }}
     />
   ) : null;

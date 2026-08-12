@@ -75,12 +75,12 @@ function EditorPage({
         () =>
             getActiveLyric(
                 project.lyrics,
-                audioTransport.currentTime,
+                audioTransport.visualTime,
                 audioTransport.duration
             ),
         [
             project.lyrics,
-            audioTransport.currentTime,
+            audioTransport.visualTime,
             audioTransport.duration,
         ]
     );
