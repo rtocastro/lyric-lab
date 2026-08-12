@@ -1001,6 +1001,11 @@ function EditorPage({
                                 animation={activeLyricAnimation}
                                 lyricStart={activeLyric?.start ?? null}
                                 lyricEnd={activeLyric?.end ?? null}
+                                getAudioStream={audioTransport.getAudioStream}
+                                duration={audioTransport.duration}
+                                playAudio={audioTransport.play}
+                                pauseAudio={audioTransport.pause}
+                                seekAudio={audioTransport.seek}
                             />
                         </div>
                     </div>

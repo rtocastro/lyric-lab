@@ -17,17 +17,24 @@ function ExportCanvas({
     animation,
     lyricStart = null,
     lyricEnd = null,
+    getAudioStream,
+    duration = 0,
+    playAudio,
+    pauseAudio,
+    seekAudio,
 }) {
     const canvasRef = useRef(null);
     const imageRef = useRef(null);
     const videoRef = useRef(null);
-
+    const currentTimeRef = useRef(currentTime);
 
     const [backgroundVideoUrl, setBackgroundVideoUrl] =
         useState("");
+
     const [imageReady, setImageReady] =
         useState(false);
-    const [isTestRecording, setIsTestRecording] =
+
+    const [isExporting, setIsExporting] =
         useState(false);
 
     const currentVisuals = {
@@ -49,6 +56,13 @@ function ExportCanvas({
         });
 
     useEffect(() => {
+        currentTimeRef.current = currentTime;
+    }, [currentTime]);
+
+    /*
+     * SOLID COLOR BACKGROUND
+     */
+    useEffect(() => {
         if (
             currentVisuals.backgroundType !== "color"
         ) {
@@ -61,7 +75,8 @@ function ExportCanvas({
             return;
         }
 
-        const context = canvas.getContext("2d");
+        const context =
+            canvas.getContext("2d");
 
         if (!context) {
             return;
@@ -106,10 +121,16 @@ function ExportCanvas({
         currentTime,
     ]);
 
+    /*
+     * LOAD IMAGE BACKGROUND ONCE
+     */
     useEffect(() => {
         if (
             currentVisuals.backgroundType !== "image" ||
-            !(currentVisuals.backgroundImage instanceof Blob)
+            !(
+                currentVisuals.backgroundImage
+                instanceof Blob
+            )
         ) {
             imageRef.current = null;
             setImageReady(false);
@@ -117,9 +138,10 @@ function ExportCanvas({
             return undefined;
         }
 
-        const objectUrl = URL.createObjectURL(
-            currentVisuals.backgroundImage
-        );
+        const objectUrl =
+            URL.createObjectURL(
+                currentVisuals.backgroundImage
+            );
 
         const image = new Image();
 
@@ -144,19 +166,24 @@ function ExportCanvas({
             image.onload = null;
             image.onerror = null;
 
-            if (imageRef.current === image) {
+            if (
+                imageRef.current === image
+            ) {
                 imageRef.current = null;
             }
 
-            URL.revokeObjectURL(objectUrl);
+            URL.revokeObjectURL(
+                objectUrl
+            );
         };
     }, [
         currentVisuals.backgroundType,
         currentVisuals.backgroundImage,
     ]);
 
-
-
+    /*
+     * DRAW IMAGE BACKGROUND
+     */
     useEffect(() => {
         if (
             currentVisuals.backgroundType !== "image" ||
@@ -165,28 +192,41 @@ function ExportCanvas({
             return;
         }
 
+        const canvas =
+            canvasRef.current;
 
-        const canvas = canvasRef.current;
-        const image = imageRef.current;
+        const image =
+            imageRef.current;
 
-        if (!canvas || !image) {
+        if (
+            !canvas ||
+            !image
+        ) {
             return;
         }
 
-        const context = canvas.getContext("2d");
+        const context =
+            canvas.getContext("2d");
 
         if (!context) {
             return;
         }
 
-        const rect = getMediaDrawRect({
-            sourceWidth: image.naturalWidth,
-            sourceHeight: image.naturalHeight,
-            canvasWidth: canvas.width,
-            canvasHeight: canvas.height,
-            fit: currentVisuals.fit,
-            position: currentVisuals.position,
-        });
+        const rect =
+            getMediaDrawRect({
+                sourceWidth:
+                    image.naturalWidth,
+                sourceHeight:
+                    image.naturalHeight,
+                canvasWidth:
+                    canvas.width,
+                canvasHeight:
+                    canvas.height,
+                fit:
+                    currentVisuals.fit,
+                position:
+                    currentVisuals.position,
+            });
 
         if (!rect) {
             return;
@@ -199,7 +239,8 @@ function ExportCanvas({
             canvas.height
         );
 
-        context.fillStyle = "#000000";
+        context.fillStyle =
+            "#000000";
 
         context.fillRect(
             0,
@@ -237,32 +278,50 @@ function ExportCanvas({
         animation,
     ]);
 
+    /*
+     * LOAD VIDEO BACKGROUND
+     */
     useEffect(() => {
         if (
             currentVisuals.backgroundType !== "video" ||
-            !(currentVisuals.backgroundVideo instanceof Blob)
+            !(
+                currentVisuals.backgroundVideo
+                instanceof Blob
+            )
         ) {
             setBackgroundVideoUrl("");
+
             return undefined;
         }
 
-        const objectUrl = URL.createObjectURL(
-            currentVisuals.backgroundVideo
+        const objectUrl =
+            URL.createObjectURL(
+                currentVisuals.backgroundVideo
+            );
+
+        setBackgroundVideoUrl(
+            objectUrl
         );
 
-        setBackgroundVideoUrl(objectUrl);
-
         return () => {
-            URL.revokeObjectURL(objectUrl);
+            URL.revokeObjectURL(
+                objectUrl
+            );
         };
     }, [
         currentVisuals.backgroundType,
         currentVisuals.backgroundVideo,
     ]);
 
+    /*
+     * DRAW VIDEO BACKGROUND
+     */
     useEffect(() => {
-        const video = videoRef.current;
-        const canvas = canvasRef.current;
+        const video =
+            videoRef.current;
+
+        const canvas =
+            canvasRef.current;
 
         if (
             currentVisuals.backgroundType !== "video" ||
@@ -273,7 +332,8 @@ function ExportCanvas({
             return undefined;
         }
 
-        const context = canvas.getContext("2d");
+        const context =
+            canvas.getContext("2d");
 
         if (!context) {
             return undefined;
@@ -288,14 +348,21 @@ function ExportCanvas({
                 return;
             }
 
-            const rect = getMediaDrawRect({
-                sourceWidth: video.videoWidth,
-                sourceHeight: video.videoHeight,
-                canvasWidth: canvas.width,
-                canvasHeight: canvas.height,
-                fit: currentVisuals.fit,
-                position: currentVisuals.position,
-            });
+            const rect =
+                getMediaDrawRect({
+                    sourceWidth:
+                        video.videoWidth,
+                    sourceHeight:
+                        video.videoHeight,
+                    canvasWidth:
+                        canvas.width,
+                    canvasHeight:
+                        canvas.height,
+                    fit:
+                        currentVisuals.fit,
+                    position:
+                        currentVisuals.position,
+                });
 
             if (!rect) {
                 return;
@@ -308,7 +375,9 @@ function ExportCanvas({
                 canvas.height
             );
 
-            context.fillStyle = "#000000";
+            context.fillStyle =
+                "#000000";
+
             context.fillRect(
                 0,
                 0,
@@ -334,47 +403,54 @@ function ExportCanvas({
             });
         };
 
-        const seekToCurrentTime = () => {
-            if (
-                !Number.isFinite(video.duration) ||
-                video.duration <= 0
-            ) {
-                return;
-            }
+        const seekToCurrentTime =
+            () => {
+                if (
+                    !Number.isFinite(
+                        video.duration
+                    ) ||
+                    video.duration <= 0
+                ) {
+                    return;
+                }
 
-            let targetTime =
-                currentTime % video.duration;
+                let targetTime =
+                    currentTime %
+                    video.duration;
 
-            /*
-             * At exactly 0 some browsers have metadata
-             * but haven't decoded a drawable frame yet.
-             */
-            if (targetTime < 0.05) {
-                targetTime = Math.min(
-                    0.05,
-                    video.duration
-                );
-            }
+                if (
+                    targetTime < 0.05
+                ) {
+                    targetTime =
+                        Math.min(
+                            0.05,
+                            video.duration
+                        );
+                }
 
-            if (
-                Math.abs(
-                    video.currentTime - targetTime
-                ) < 0.01
-            ) {
+                if (
+                    Math.abs(
+                        video.currentTime -
+                        targetTime
+                    ) < 0.01
+                ) {
+                    drawVideoFrame();
+                    return;
+                }
+
+                video.currentTime =
+                    targetTime;
+            };
+
+        const handleLoadedData =
+            () => {
+                seekToCurrentTime();
+            };
+
+        const handleSeeked =
+            () => {
                 drawVideoFrame();
-                return;
-            }
-
-            video.currentTime = targetTime;
-        };
-
-        const handleLoadedData = () => {
-            seekToCurrentTime();
-        };
-
-        const handleSeeked = () => {
-            drawVideoFrame();
-        };
+            };
 
         video.addEventListener(
             "loadeddata",
@@ -386,7 +462,9 @@ function ExportCanvas({
             handleSeeked
         );
 
-        if (video.readyState >= 2) {
+        if (
+            video.readyState >= 2
+        ) {
             seekToCurrentTime();
         }
 
@@ -414,134 +492,283 @@ function ExportCanvas({
         animation,
     ]);
 
-    const handleTestRecording = () => {
-        const canvas = canvasRef.current;
+    /*
+     * FULL SONG EXPORT
+     */
+    const handleFullExport =
+        async () => {
+            const canvas =
+                canvasRef.current;
 
-        if (
-            !canvas ||
-            typeof canvas.captureStream !== "function"
-        ) {
-            console.error(
-                "Canvas recording is not supported in this browser."
-            );
-            return;
-        }
-
-        if (
-            typeof MediaRecorder === "undefined"
-        ) {
-            console.error(
-                "MediaRecorder is not supported in this browser."
-            );
-            return;
-        }
-
-        const stream =
-            canvas.captureStream(30);
-
-        const mimeType =
-            MediaRecorder.isTypeSupported(
-                "video/webm;codecs=vp9"
-            )
-                ? "video/webm;codecs=vp9"
-                : MediaRecorder.isTypeSupported(
-                    "video/webm;codecs=vp8"
-                )
-                    ? "video/webm;codecs=vp8"
-                    : "video/webm";
-
-        const recorder =
-            new MediaRecorder(stream, {
-                mimeType,
-                videoBitsPerSecond: 8_000_000,
-            });
-
-        const chunks = [];
-
-        recorder.ondataavailable = (event) => {
-            if (event.data.size > 0) {
-                chunks.push(event.data);
-            }
-        };
-
-        recorder.onerror = (event) => {
-            console.error(
-                "Test export recording failed:",
-                event
-            );
-
-            setIsTestRecording(false);
-        };
-
-        recorder.onstop = () => {
-            const blob = new Blob(
-                chunks,
-                {
-                    type: mimeType,
-                }
-            );
-
-            const downloadUrl =
-                URL.createObjectURL(blob);
-
-            const link =
-                document.createElement("a");
-
-            link.href = downloadUrl;
-            link.download =
-                "lyric-lab-test.webm";
-
-            document.body.appendChild(link);
-
-            link.click();
-
-            document.body.removeChild(link);
-
-            setTimeout(() => {
-                URL.revokeObjectURL(
-                    downloadUrl
-                );
-            }, 1000);
-
-            stream
-                .getTracks()
-                .forEach((track) => {
-                    track.stop();
-                });
-
-            setIsTestRecording(false);
-        };
-
-        setIsTestRecording(true);
-
-        recorder.start();
-
-        setTimeout(() => {
             if (
-                recorder.state !== "inactive"
+                !canvas ||
+                typeof canvas.captureStream !==
+                    "function" ||
+                typeof MediaRecorder ===
+                    "undefined"
             ) {
-                recorder.stop();
+                console.error(
+                    "Full export is not supported in this browser."
+                );
+
+                return;
             }
-        }, 5000);
-    };
+
+            if (
+                !Number.isFinite(
+                    duration
+                ) ||
+                duration <= 0
+            ) {
+                console.error(
+                    "Cannot export without a valid project duration."
+                );
+
+                return;
+            }
+
+            if (isExporting) {
+                return;
+            }
+
+            let canvasStream = null;
+
+            try {
+                setIsExporting(true);
+
+                pauseAudio?.();
+                seekAudio?.(0);
+
+                /*
+                 * Allow React + canvas one frame
+                 * to catch up after the seek.
+                 */
+                await new Promise(
+                    (resolve) =>
+                        requestAnimationFrame(
+                            resolve
+                        )
+                );
+
+                canvasStream =
+                    canvas.captureStream(
+                        30
+                    );
+
+                const audioStream =
+                    typeof getAudioStream ===
+                    "function"
+                        ? getAudioStream()
+                        : null;
+
+                const combinedStream =
+                    new MediaStream();
+
+                canvasStream
+                    .getVideoTracks()
+                    .forEach(
+                        (track) => {
+                            combinedStream.addTrack(
+                                track
+                            );
+                        }
+                    );
+
+                audioStream
+                    ?.getAudioTracks()
+                    .forEach(
+                        (track) => {
+                            combinedStream.addTrack(
+                                track
+                            );
+                        }
+                    );
+
+                const mimeType =
+                    MediaRecorder.isTypeSupported(
+                        "video/webm;codecs=vp9"
+                    )
+                        ? "video/webm;codecs=vp9"
+                        : MediaRecorder.isTypeSupported(
+                              "video/webm;codecs=vp8"
+                          )
+                            ? "video/webm;codecs=vp8"
+                            : "video/webm";
+
+                const recorder =
+                    new MediaRecorder(
+                        combinedStream,
+                        {
+                            mimeType,
+                            videoBitsPerSecond:
+                                8_000_000,
+                        }
+                    );
+
+                const chunks = [];
+
+                recorder.ondataavailable =
+                    (event) => {
+                        if (
+                            event.data.size >
+                            0
+                        ) {
+                            chunks.push(
+                                event.data
+                            );
+                        }
+                    };
+
+                recorder.onerror =
+                    (event) => {
+                        console.error(
+                            "Full export failed:",
+                            event
+                        );
+
+                        setIsExporting(
+                            false
+                        );
+                    };
+
+                recorder.onstop =
+                    () => {
+                        const blob =
+                            new Blob(
+                                chunks,
+                                {
+                                    type:
+                                        mimeType,
+                                }
+                            );
+
+                        const downloadUrl =
+                            URL.createObjectURL(
+                                blob
+                            );
+
+                        const link =
+                            document.createElement(
+                                "a"
+                            );
+
+                        link.href =
+                            downloadUrl;
+
+                        link.download =
+                            "lyric-lab-export.webm";
+
+                        document.body.appendChild(
+                            link
+                        );
+
+                        link.click();
+
+                        document.body.removeChild(
+                            link
+                        );
+
+                        setTimeout(
+                            () => {
+                                URL.revokeObjectURL(
+                                    downloadUrl
+                                );
+                            },
+                            1000
+                        );
+
+                        canvasStream
+                            ?.getTracks()
+                            .forEach(
+                                (
+                                    track
+                                ) => {
+                                    track.stop();
+                                }
+                            );
+
+                        setIsExporting(
+                            false
+                        );
+                    };
+
+                recorder.start();
+
+                /*
+                 * Start the audio only after
+                 * MediaRecorder is already active.
+                 */
+                await playAudio?.();
+
+                const stopWhenFinished =
+                    () => {
+                        if (
+                            currentTimeRef.current >=
+                            duration -
+                                0.05
+                        ) {
+                            pauseAudio?.();
+
+                            if (
+                                recorder.state !==
+                                "inactive"
+                            ) {
+                                recorder.stop();
+                            }
+
+                            return;
+                        }
+
+                        requestAnimationFrame(
+                            stopWhenFinished
+                        );
+                    };
+
+                requestAnimationFrame(
+                    stopWhenFinished
+                );
+            } catch (error) {
+                console.error(
+                    "Could not start full export:",
+                    error
+                );
+
+                canvasStream
+                    ?.getTracks()
+                    .forEach(
+                        (track) => {
+                            track.stop();
+                        }
+                    );
+
+                setIsExporting(false);
+            }
+        };
 
     return (
         <>
             {backgroundVideoUrl && (
                 <video
                     ref={videoRef}
-                    src={backgroundVideoUrl}
+                    src={
+                        backgroundVideoUrl
+                    }
                     muted
                     playsInline
                     preload="auto"
                     style={{
-                        position: "fixed",
-                        left: "-9999px",
+                        position:
+                            "fixed",
+                        left:
+                            "-9999px",
                         top: 0,
-                        width: "1px",
-                        height: "1px",
+                        width:
+                            "1px",
+                        height:
+                            "1px",
                         opacity: 0,
-                        pointerEvents: "none",
+                        pointerEvents:
+                            "none",
                     }}
                 />
             )}
@@ -555,17 +782,19 @@ function ExportCanvas({
 
             <button
                 type="button"
-                onClick={handleTestRecording}
-                disabled={isTestRecording}
+                onClick={
+                    handleFullExport
+                }
+                disabled={
+                    isExporting
+                }
             >
-                {isTestRecording
-                    ? "Recording 5s..."
-                    : "Record 5s Test"}
+                {isExporting
+                    ? "Exporting Video..."
+                    : "Export Full Video"}
             </button>
         </>
     );
 }
-
-
 
 export default ExportCanvas;

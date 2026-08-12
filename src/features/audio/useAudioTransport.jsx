@@ -103,6 +103,8 @@ function useAudioTransport(audioFile) {
       return;
     }
 
+
+
     audioElement.pause();
     audioElement.currentTime = 0;
 
@@ -110,6 +112,52 @@ function useAudioTransport(audioFile) {
     setIsPlaying(false);
     setVisualTime(0);
   }, []);
+
+  const getAudioStream = useCallback(() => {
+    const audioElement = audioRef.current;
+
+    if (!audioElement) {
+      return null;
+    }
+
+    if (
+      typeof audioElement.captureStream === "function"
+    ) {
+      return audioElement.captureStream();
+    }
+
+    if (
+      typeof audioElement.mozCaptureStream === "function"
+    ) {
+      return audioElement.mozCaptureStream();
+    }
+
+    return null;
+  }, []);
+
+  const play = useCallback(async () => {
+    const audioElement = audioRef.current;
+
+    if (!audioElement) {
+      return;
+    }
+
+    try {
+      await audioElement.play();
+    } catch (error) {
+      console.error(
+        "Audio playback failed:",
+        error
+      );
+
+      setErrorMessage(
+        "The browser could not play this audio file."
+      );
+
+      throw error;
+    }
+  }, []);
+
 
   useEffect(() => {
     if (!isPlaying) {
@@ -182,9 +230,11 @@ function useAudioTransport(audioFile) {
     errorMessage,
     setErrorMessage,
     togglePlayback,
+    play,
     seek,
     pause,
     reset,
+    getAudioStream,
   };
 }
 
