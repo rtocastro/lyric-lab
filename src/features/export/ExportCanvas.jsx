@@ -27,6 +27,8 @@ function ExportCanvas({
         useState("");
     const [imageReady, setImageReady] =
         useState(false);
+    const [isTestRecording, setIsTestRecording] =
+        useState(false);
 
     const currentVisuals = {
         backgroundType: "color",
@@ -411,6 +413,118 @@ function ExportCanvas({
         style,
         animation,
     ]);
+
+    const handleTestRecording = () => {
+        const canvas = canvasRef.current;
+
+        if (
+            !canvas ||
+            typeof canvas.captureStream !== "function"
+        ) {
+            console.error(
+                "Canvas recording is not supported in this browser."
+            );
+            return;
+        }
+
+        if (
+            typeof MediaRecorder === "undefined"
+        ) {
+            console.error(
+                "MediaRecorder is not supported in this browser."
+            );
+            return;
+        }
+
+        const stream =
+            canvas.captureStream(30);
+
+        const mimeType =
+            MediaRecorder.isTypeSupported(
+                "video/webm;codecs=vp9"
+            )
+                ? "video/webm;codecs=vp9"
+                : MediaRecorder.isTypeSupported(
+                    "video/webm;codecs=vp8"
+                )
+                    ? "video/webm;codecs=vp8"
+                    : "video/webm";
+
+        const recorder =
+            new MediaRecorder(stream, {
+                mimeType,
+                videoBitsPerSecond: 8_000_000,
+            });
+
+        const chunks = [];
+
+        recorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+                chunks.push(event.data);
+            }
+        };
+
+        recorder.onerror = (event) => {
+            console.error(
+                "Test export recording failed:",
+                event
+            );
+
+            setIsTestRecording(false);
+        };
+
+        recorder.onstop = () => {
+            const blob = new Blob(
+                chunks,
+                {
+                    type: mimeType,
+                }
+            );
+
+            const downloadUrl =
+                URL.createObjectURL(blob);
+
+            const link =
+                document.createElement("a");
+
+            link.href = downloadUrl;
+            link.download =
+                "lyric-lab-test.webm";
+
+            document.body.appendChild(link);
+
+            link.click();
+
+            document.body.removeChild(link);
+
+            setTimeout(() => {
+                URL.revokeObjectURL(
+                    downloadUrl
+                );
+            }, 1000);
+
+            stream
+                .getTracks()
+                .forEach((track) => {
+                    track.stop();
+                });
+
+            setIsTestRecording(false);
+        };
+
+        setIsTestRecording(true);
+
+        recorder.start();
+
+        setTimeout(() => {
+            if (
+                recorder.state !== "inactive"
+            ) {
+                recorder.stop();
+            }
+        }, 5000);
+    };
+
     return (
         <>
             {backgroundVideoUrl && (
@@ -438,6 +552,16 @@ function ExportCanvas({
                 width={width}
                 height={height}
             />
+
+            <button
+                type="button"
+                onClick={handleTestRecording}
+                disabled={isTestRecording}
+            >
+                {isTestRecording
+                    ? "Recording 5s..."
+                    : "Record 5s Test"}
+            </button>
         </>
     );
 }
