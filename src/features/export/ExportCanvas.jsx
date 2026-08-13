@@ -37,6 +37,9 @@ function ExportCanvas({
     const [isExporting, setIsExporting] =
         useState(false);
 
+    const [exportProgress, setExportProgress] =
+        useState(0);
+
     const currentVisuals = {
         backgroundType: "color",
         backgroundColor: "#000000",
@@ -503,9 +506,9 @@ function ExportCanvas({
             if (
                 !canvas ||
                 typeof canvas.captureStream !==
-                    "function" ||
+                "function" ||
                 typeof MediaRecorder ===
-                    "undefined"
+                "undefined"
             ) {
                 console.error(
                     "Full export is not supported in this browser."
@@ -535,6 +538,7 @@ function ExportCanvas({
 
             try {
                 setIsExporting(true);
+                setExportProgress(0);
 
                 pauseAudio?.();
                 seekAudio?.(0);
@@ -557,7 +561,7 @@ function ExportCanvas({
 
                 const audioStream =
                     typeof getAudioStream ===
-                    "function"
+                        "function"
                         ? getAudioStream()
                         : null;
 
@@ -590,8 +594,8 @@ function ExportCanvas({
                     )
                         ? "video/webm;codecs=vp9"
                         : MediaRecorder.isTypeSupported(
-                              "video/webm;codecs=vp8"
-                          )
+                            "video/webm;codecs=vp8"
+                        )
                             ? "video/webm;codecs=vp8"
                             : "video/webm";
 
@@ -687,6 +691,8 @@ function ExportCanvas({
                                 }
                             );
 
+                        setExportProgress(100);
+
                         setIsExporting(
                             false
                         );
@@ -702,10 +708,28 @@ function ExportCanvas({
 
                 const stopWhenFinished =
                     () => {
+                        const progress =
+                            Number.isFinite(duration) &&
+                                duration > 0
+                                ? Math.min(
+                                    Math.max(
+                                        currentTimeRef.current /
+                                        duration,
+                                        0
+                                    ),
+                                    1
+                                )
+                                : 0;
+
+                        setExportProgress(
+                            Math.round(progress * 100)
+                        );
+
+
                         if (
                             currentTimeRef.current >=
                             duration -
-                                0.05
+                            0.05
                         ) {
                             pauseAudio?.();
 
@@ -742,6 +766,7 @@ function ExportCanvas({
                     );
 
                 setIsExporting(false);
+                setExportProgress(0);
             }
         };
 
@@ -793,6 +818,27 @@ function ExportCanvas({
                     ? "Exporting Video..."
                     : "Export Full Video"}
             </button>
+
+            {isExporting && (
+                <div className="export-progress">
+                    <div className="export-progress__label">
+                        <span>Rendering video</span>
+                        <strong>
+                            {exportProgress}%
+                        </strong>
+                    </div>
+
+                    <div className="export-progress__track">
+                        <div
+                            className="export-progress__fill"
+                            style={{
+                                width:
+                                    `${exportProgress}%`,
+                            }}
+                        />
+                    </div>
+                </div>
+            )}
         </>
     );
 }
