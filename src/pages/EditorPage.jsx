@@ -1341,6 +1341,7 @@ function EditorPage({
                         onSeek={audioTransport.seek}
                         onSelectLyric={handleSelectLyric}
                         onTimingChange={handleLyricTimingChange}
+                        isPlaying={audioTransport.isPlaying}
                     />
                 </section>
             </div>

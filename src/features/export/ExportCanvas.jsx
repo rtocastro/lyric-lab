@@ -22,6 +22,7 @@ function ExportCanvas({
     playAudio,
     pauseAudio,
     seekAudio,
+    isPlaying = false,
 }) {
     const canvasRef = useRef(null);
     const imageRef = useRef(null);
@@ -61,6 +62,30 @@ function ExportCanvas({
     useEffect(() => {
         currentTimeRef.current = currentTime;
     }, [currentTime]);
+
+    useEffect(() => {
+        const video = videoRef.current;
+
+        if (
+            !video ||
+            currentVisuals.backgroundType !== "video" ||
+            !backgroundVideoUrl
+        ) {
+            return;
+        }
+
+        if (isPlaying) {
+            video.play().catch(() => {
+                // Source may still be loading.
+            });
+        } else {
+            video.pause();
+        }
+    }, [
+        isPlaying,
+        currentVisuals.backgroundType,
+        backgroundVideoUrl,
+    ]);
 
     /*
      * SOLID COLOR BACKGROUND
@@ -406,49 +431,54 @@ function ExportCanvas({
             });
         };
 
-        const seekToCurrentTime =
-            () => {
-                if (
-                    !Number.isFinite(
-                        video.duration
-                    ) ||
-                    video.duration <= 0
-                ) {
-                    return;
-                }
+        const seekToCurrentTime = () => {
+            if (
+                !Number.isFinite(video.duration) ||
+                video.duration <= 0
+            ) {
+                return;
+            }
 
-                let targetTime =
-                    currentTime %
-                    video.duration;
+            let targetTime =
+                currentTime % video.duration;
 
-                if (
-                    targetTime < 0.05
-                ) {
-                    targetTime =
-                        Math.min(
-                            0.05,
-                            video.duration
-                        );
-                }
+            if (targetTime < 0.05) {
+                targetTime = Math.min(
+                    0.05,
+                    video.duration
+                );
+            }
 
-                if (
-                    Math.abs(
-                        video.currentTime -
-                        targetTime
-                    ) < 0.01
-                ) {
+            const drift =
+                Math.abs(
+                    video.currentTime -
+                    targetTime
+                );
+
+            if (!isPlaying) {
+                if (drift > 0.01) {
+                    video.currentTime =
+                        targetTime;
+                } else {
                     drawVideoFrame();
-                    return;
                 }
 
+                return;
+            }
+
+            if (drift > 0.12) {
                 video.currentTime =
                     targetTime;
-            };
+            } else {
+                drawVideoFrame();
+            }
+        };
 
-        const handleLoadedData =
-            () => {
-                seekToCurrentTime();
-            };
+        const handleLoadedData = () => {
+            seekToCurrentTime();
+        };
+
+
 
         const handleSeeked =
             () => {
@@ -470,6 +500,7 @@ function ExportCanvas({
         ) {
             seekToCurrentTime();
         }
+
 
         return () => {
             video.removeEventListener(
@@ -493,6 +524,7 @@ function ExportCanvas({
         text,
         style,
         animation,
+        isPlaying,
     ]);
 
     /*
@@ -554,11 +586,8 @@ function ExportCanvas({
                         )
                 );
 
-                canvasStream =
-                    canvas.captureStream(
-                        30
-                    );
-
+                canvasStream = canvas.captureStream(24);
+                
                 const audioStream =
                     typeof getAudioStream ===
                         "function"
@@ -590,14 +619,10 @@ function ExportCanvas({
 
                 const mimeType =
                     MediaRecorder.isTypeSupported(
-                        "video/webm;codecs=vp9"
+                        "video/webm;codecs=vp8"
                     )
-                        ? "video/webm;codecs=vp9"
-                        : MediaRecorder.isTypeSupported(
-                            "video/webm;codecs=vp8"
-                        )
-                            ? "video/webm;codecs=vp8"
-                            : "video/webm";
+                        ? "video/webm;codecs=vp8"
+                        : "video/webm";
 
                 const recorder =
                     new MediaRecorder(
