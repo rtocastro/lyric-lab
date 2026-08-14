@@ -6,6 +6,10 @@ import {
 import getMediaDrawRect from "./getMediaDrawRect";
 import drawCanvasLyric from "./drawCanvasLyric";
 import getLyricAnimationState from "../preview/getLyricAnimationState";
+import {
+    testWebCodecsExport,
+
+} from "./webCodecsExport";
 
 function ExportCanvas({
     width = 1920,
@@ -36,6 +40,9 @@ function ExportCanvas({
         useState(false);
 
     const [isExporting, setIsExporting] =
+        useState(false);
+
+    const [isWebCodecsTesting, setIsWebCodecsTesting] =
         useState(false);
 
     const [exportProgress, setExportProgress] =
@@ -587,7 +594,7 @@ function ExportCanvas({
                 );
 
                 canvasStream = canvas.captureStream(24);
-                
+
                 const audioStream =
                     typeof getAudioStream ===
                         "function"
@@ -795,6 +802,43 @@ function ExportCanvas({
             }
         };
 
+    const handleWebCodecsTest =
+        async () => {
+            const canvas =
+                canvasRef.current;
+
+            if (!canvas) {
+                return;
+            }
+
+            try {
+                setIsWebCodecsTesting(
+                    true
+                );
+
+                const result =
+                    await testWebCodecsExport({
+                        canvas,
+                        fps: 30,
+                        seconds: 4,
+                    });
+
+                console.log(
+                    "WebCodecs test result:",
+                    result
+                );
+            } catch (error) {
+                console.error(
+                    "WebCodecs test failed:",
+                    error
+                );
+            } finally {
+                setIsWebCodecsTesting(
+                    false
+                );
+            }
+        };
+
     return (
         <>
             {backgroundVideoUrl && (
@@ -842,6 +886,21 @@ function ExportCanvas({
                 {isExporting
                     ? "Exporting Video..."
                     : "Export Full Video"}
+            </button>
+
+            <button
+                type="button"
+                onClick={
+                    handleWebCodecsTest
+                }
+                disabled={
+                    isWebCodecsTesting ||
+                    isExporting
+                }
+            >
+                {isWebCodecsTesting
+                    ? "Testing WebCodecs..."
+                    : "Test WebCodecs"}
             </button>
 
             {isExporting && (
