@@ -7,6 +7,7 @@ export async function testWebCodecsExport({
     seconds = 4,
     startTime = 0,
     renderFrame,
+    audioFile = null,
 }) {
     if (!canvas) {
         throw new Error(
@@ -193,6 +194,7 @@ export async function testWebCodecsExport({
             codec,
             width,
             height,
+            audioFile,
         });
 
     encoder.close();

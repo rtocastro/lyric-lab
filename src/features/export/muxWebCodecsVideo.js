@@ -1,4 +1,5 @@
 import {
+    AudioBufferSource,
     BufferTarget,
     EncodedPacket,
     EncodedVideoPacketSource,
@@ -6,11 +7,44 @@ import {
     WebMOutputFormat,
 } from "mediabunny";
 
+async function decodeAudioFile(
+    audioFile
+) {
+    if (!audioFile) {
+        return null;
+    }
+
+    const AudioContextClass =
+        window.AudioContext ||
+        window.webkitAudioContext;
+
+    if (!AudioContextClass) {
+        throw new Error(
+            "Web Audio is not supported in this browser."
+        );
+    }
+
+    const audioContext =
+        new AudioContextClass();
+
+    try {
+        const arrayBuffer =
+            await audioFile.arrayBuffer();
+
+        return await audioContext.decodeAudioData(
+            arrayBuffer
+        );
+    } finally {
+        await audioContext.close();
+    }
+}
+
 async function muxWebCodecsVideo({
     chunks,
     width,
     height,
     codec = "vp09.00.10.08",
+    audioFile = null,
 }) {
     if (
         !Array.isArray(chunks) ||
@@ -32,9 +66,7 @@ async function muxWebCodecsVideo({
         });
 
     /*
-     * Mediabunny uses the generic codec
-     * name here rather than the full
-     * WebCodecs codec string.
+     * VIDEO
      */
     const videoSource =
         new EncodedVideoPacketSource(
@@ -45,8 +77,40 @@ async function muxWebCodecsVideo({
         videoSource
     );
 
+    /*
+     * AUDIO
+     *
+     * Decode the original song rather
+     * than recording realtime playback.
+     */
+    const audioBuffer =
+        await decodeAudioFile(
+            audioFile
+        );
+
+    let audioSource = null;
+
+    if (audioBuffer) {
+        audioSource =
+            new AudioBufferSource({
+                codec: "opus",
+                bitrate: 192_000,
+            });
+
+        output.addAudioTrack(
+            audioSource
+        );
+    }
+
+    /*
+     * All tracks must be registered
+     * before Output starts.
+     */
     await output.start();
 
+    /*
+     * Feed deterministic VP9 packets.
+     */
     for (
         let index = 0;
         index < chunks.length;
@@ -55,12 +119,6 @@ async function muxWebCodecsVideo({
         const chunk =
             chunks[index];
 
-        /*
-         * Our WebCodecs test stores
-         * timestamps/durations in
-         * microseconds. Mediabunny
-         * EncodedPacket uses seconds.
-         */
         const timestamp =
             chunk.timestamp /
             1_000_000;
@@ -101,11 +159,22 @@ async function muxWebCodecsVideo({
         }
     }
 
-    /*
-     * Signals that no additional
-     * video packets are coming.
-     */
     videoSource.close();
+
+    /*
+     * Feed the decoded song to the
+     * Opus encoder.
+     */
+    if (
+        audioSource &&
+        audioBuffer
+    ) {
+        await audioSource.add(
+            audioBuffer
+        );
+
+        audioSource.close();
+    }
 
     await output.finalize();
 

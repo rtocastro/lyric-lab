@@ -1176,6 +1176,7 @@ function ExportCanvas({
                         fps: 30,
                         seconds,
                         startTime,
+                        audioFile,
                         renderFrame:
                             renderDeterministicFrame,
                     });
