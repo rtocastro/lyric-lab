@@ -6,6 +6,7 @@ import {
 import getMediaDrawRect from "./getMediaDrawRect";
 import drawCanvasLyric from "./drawCanvasLyric";
 import getLyricAnimationState from "../preview/getLyricAnimationState";
+import renderExportFrame from "./renderExportFrame";
 import {
     testWebCodecsExport,
 
@@ -21,6 +22,7 @@ function ExportCanvas({
     animation,
     lyricStart = null,
     lyricEnd = null,
+    lyrics = [],
     getAudioStream,
     duration = 0,
     playAudio,
