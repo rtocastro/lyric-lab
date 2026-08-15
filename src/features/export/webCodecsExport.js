@@ -1,3 +1,6 @@
+import muxWebCodecsVideo
+    from "./muxWebCodecsVideo";
+
 export async function testWebCodecsExport({
     canvas,
     fps = 30,
@@ -184,6 +187,14 @@ export async function testWebCodecsExport({
         throw encoderError;
     }
 
+    const blob =
+        await muxWebCodecsVideo({
+            chunks,
+            codec,
+            width,
+            height,
+        });
+
     encoder.close();
 
     console.log(
@@ -197,6 +208,7 @@ export async function testWebCodecsExport({
 
     return {
         chunks,
+        blob,
         codec,
         width,
         height,

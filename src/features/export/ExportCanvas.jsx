@@ -1179,6 +1179,36 @@ function ExportCanvas({
                             renderDeterministicFrame,
                     });
 
+                const downloadUrl =
+                    URL.createObjectURL(
+                        result.blob
+                    );
+
+                const link =
+                    document.createElement("a");
+
+                link.href =
+                    downloadUrl;
+
+                link.download =
+                    "lyric-lab-webcodecs-test.webm";
+
+                document.body.appendChild(
+                    link
+                );
+
+                link.click();
+
+                document.body.removeChild(
+                    link
+                );
+
+                setTimeout(() => {
+                    URL.revokeObjectURL(
+                        downloadUrl
+                    );
+                }, 1000);
+
                 console.log(
                     "Deterministic WebCodecs result:",
                     result
