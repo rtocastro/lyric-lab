@@ -223,6 +223,7 @@ function useAudioTransport(audioFile) {
   return {
     audioElement,
     audioUrl,
+    audioFile,
     isPlaying,
     currentTime,
     visualTime,

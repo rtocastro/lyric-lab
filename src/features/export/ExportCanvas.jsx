@@ -29,6 +29,7 @@ function ExportCanvas({
     pauseAudio,
     seekAudio,
     isPlaying = false,
+    audioFile,
 }) {
     const canvasRef = useRef(null);
     const imageRef = useRef(null);

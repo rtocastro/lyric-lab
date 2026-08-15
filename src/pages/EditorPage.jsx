@@ -1007,6 +1007,7 @@ function EditorPage({
                                 playAudio={audioTransport.play}
                                 pauseAudio={audioTransport.pause}
                                 seekAudio={audioTransport.seek}
+                                audioFile={audioTransport.audioFile}
                             />
                         </div>
                     </div>
