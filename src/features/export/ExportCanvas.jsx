@@ -804,6 +804,338 @@ function ExportCanvas({
             }
         };
 
+    const renderDeterministicFrame =
+        async ({ time }) => {
+            const canvas =
+                canvasRef.current;
+
+            if (!canvas) {
+                return;
+            }
+
+            const context =
+                canvas.getContext("2d");
+
+            if (!context) {
+                return;
+            }
+
+            const drawBackground =
+                async ({
+                    context:
+                    frameContext,
+                    canvas:
+                    frameCanvas,
+                    time:
+                    frameTime,
+                }) => {
+                    /*
+                     * COLOR
+                     */
+                    if (
+                        currentVisuals.backgroundType ===
+                        "color"
+                    ) {
+                        frameContext.clearRect(
+                            0,
+                            0,
+                            frameCanvas.width,
+                            frameCanvas.height
+                        );
+
+                        frameContext.fillStyle =
+                            currentVisuals.backgroundColor;
+
+                        frameContext.fillRect(
+                            0,
+                            0,
+                            frameCanvas.width,
+                            frameCanvas.height
+                        );
+
+                        return;
+                    }
+
+                    /*
+                     * IMAGE
+                     */
+                    if (
+                        currentVisuals.backgroundType ===
+                        "image"
+                    ) {
+                        const image =
+                            imageRef.current;
+
+                        if (!image) {
+                            return;
+                        }
+
+                        const rect =
+                            getMediaDrawRect({
+                                sourceWidth:
+                                    image.naturalWidth,
+                                sourceHeight:
+                                    image.naturalHeight,
+                                canvasWidth:
+                                    frameCanvas.width,
+                                canvasHeight:
+                                    frameCanvas.height,
+                                fit:
+                                    currentVisuals.fit,
+                                position:
+                                    currentVisuals.position,
+                            });
+
+                        if (!rect) {
+                            return;
+                        }
+
+                        frameContext.clearRect(
+                            0,
+                            0,
+                            frameCanvas.width,
+                            frameCanvas.height
+                        );
+
+                        frameContext.fillStyle =
+                            "#000000";
+
+                        frameContext.fillRect(
+                            0,
+                            0,
+                            frameCanvas.width,
+                            frameCanvas.height
+                        );
+
+                        frameContext.drawImage(
+                            image,
+                            rect.x,
+                            rect.y,
+                            rect.width,
+                            rect.height
+                        );
+
+                        return;
+                    }
+
+                    /*
+                     * VIDEO
+                     */
+                    if (
+                        currentVisuals.backgroundType ===
+                        "video"
+                    ) {
+                        const video =
+                            videoRef.current;
+
+                        if (
+                            !video ||
+                            !Number.isFinite(
+                                video.duration
+                            ) ||
+                            video.duration <= 0
+                        ) {
+                            return;
+                        }
+
+                        let targetTime =
+                            frameTime %
+                            video.duration;
+
+                        if (
+                            targetTime < 0.05
+                        ) {
+                            targetTime =
+                                Math.min(
+                                    0.05,
+                                    video.duration
+                                );
+                        }
+
+                        /*
+                         * Deterministic video export:
+                         * wait until the requested
+                         * source frame is decoded.
+                         */
+                        if (
+                            Math.abs(
+                                video.currentTime -
+                                targetTime
+                            ) > 0.002
+                        ) {
+                            await new Promise(
+                                (
+                                    resolve,
+                                    reject
+                                ) => {
+                                    const handleSeeked =
+                                        () => {
+                                            cleanup();
+                                            resolve();
+                                        };
+
+                                    const handleError =
+                                        () => {
+                                            cleanup();
+
+                                            reject(
+                                                new Error(
+                                                    "Could not seek export background video."
+                                                )
+                                            );
+                                        };
+
+                                    const cleanup =
+                                        () => {
+                                            video.removeEventListener(
+                                                "seeked",
+                                                handleSeeked
+                                            );
+
+                                            video.removeEventListener(
+                                                "error",
+                                                handleError
+                                            );
+                                        };
+
+                                    video.addEventListener(
+                                        "seeked",
+                                        handleSeeked,
+                                        {
+                                            once: true,
+                                        }
+                                    );
+
+                                    video.addEventListener(
+                                        "error",
+                                        handleError,
+                                        {
+                                            once: true,
+                                        }
+                                    );
+
+                                    video.currentTime =
+                                        targetTime;
+                                }
+                            );
+                        }
+
+                        const rect =
+                            getMediaDrawRect({
+                                sourceWidth:
+                                    video.videoWidth,
+                                sourceHeight:
+                                    video.videoHeight,
+                                canvasWidth:
+                                    frameCanvas.width,
+                                canvasHeight:
+                                    frameCanvas.height,
+                                fit:
+                                    currentVisuals.fit,
+                                position:
+                                    currentVisuals.position,
+                            });
+
+                        if (!rect) {
+                            return;
+                        }
+
+                        frameContext.clearRect(
+                            0,
+                            0,
+                            frameCanvas.width,
+                            frameCanvas.height
+                        );
+
+                        frameContext.fillStyle =
+                            "#000000";
+
+                        frameContext.fillRect(
+                            0,
+                            0,
+                            frameCanvas.width,
+                            frameCanvas.height
+                        );
+
+                        frameContext.drawImage(
+                            video,
+                            rect.x,
+                            rect.y,
+                            rect.width,
+                            rect.height
+                        );
+                    }
+                };
+
+            /*
+             * renderExportFrame currently calls
+             * drawBackground synchronously, so
+             * prepare the background first.
+             */
+            await drawBackground({
+                context,
+                canvas,
+                time,
+            });
+
+            renderExportFrame({
+                canvas,
+                time,
+                lyrics,
+                style,
+                animation,
+
+                /*
+                 * Already drawn above.
+                 */
+                drawBackground: () => { },
+            });
+        };
+
+    const getWebCodecsTestWindow = () => {
+        const syncedLyric =
+            lyrics.find((lyric) => {
+                const start =
+                    Number(lyric.start);
+
+                const end =
+                    Number(lyric.end);
+
+                return (
+                    Number.isFinite(start) &&
+                    Number.isFinite(end) &&
+                    end > start
+                );
+            });
+
+        if (!syncedLyric) {
+            return {
+                startTime: 0,
+                seconds: 4,
+            };
+        }
+
+        const start =
+            Math.max(
+                Number(syncedLyric.start) -
+                0.5,
+                0
+            );
+
+        const end =
+            Number(syncedLyric.end) +
+            0.5;
+
+        return {
+            startTime: start,
+            seconds:
+                Math.max(
+                    end - start,
+                    1
+                ),
+        };
+    };
+
     const handleWebCodecsTest =
         async () => {
             const canvas =
@@ -818,20 +1150,42 @@ function ExportCanvas({
                     true
                 );
 
+                /*
+                 * Important for deterministic
+                 * video-background testing.
+                 */
+                videoRef.current?.pause();
+
+                const {
+                    startTime,
+                    seconds,
+                } = getWebCodecsTestWindow();
+
+                console.log(
+                    "Testing lyric window:",
+                    {
+                        startTime,
+                        seconds,
+                    }
+                );
+
                 const result =
                     await testWebCodecsExport({
                         canvas,
                         fps: 30,
-                        seconds: 4,
+                        seconds,
+                        startTime,
+                        renderFrame:
+                            renderDeterministicFrame,
                     });
 
                 console.log(
-                    "WebCodecs test result:",
+                    "Deterministic WebCodecs result:",
                     result
                 );
             } catch (error) {
                 console.error(
-                    "WebCodecs test failed:",
+                    "Deterministic WebCodecs test failed:",
                     error
                 );
             } finally {

@@ -2,6 +2,8 @@ export async function testWebCodecsExport({
     canvas,
     fps = 30,
     seconds = 4,
+    startTime = 0,
+    renderFrame,
 }) {
     if (!canvas) {
         throw new Error(
@@ -30,14 +32,8 @@ export async function testWebCodecsExport({
         codec,
         width,
         height,
-
-        // Intentionally generous for our
-        // 1920x1080 quality test.
         bitrate: 12_000_000,
-
         framerate: fps,
-
-        // Favor quality over minimum latency.
         latencyMode: "quality",
     };
 
@@ -67,8 +63,10 @@ export async function testWebCodecsExport({
 
             chunks.push({
                 type: chunk.type,
-                timestamp: chunk.timestamp,
-                duration: chunk.duration,
+                timestamp:
+                    chunk.timestamp,
+                duration:
+                    chunk.duration,
                 data,
                 metadata,
             });
@@ -89,13 +87,15 @@ export async function testWebCodecsExport({
     );
 
     const totalFrames =
-        Math.round(seconds * fps);
+        Math.round(
+            seconds * fps
+        );
 
     const frameDuration =
         1_000_000 / fps;
 
     console.log(
-        `WebCodecs test starting: ${width}x${height}, ${fps} FPS, ${totalFrames} frames`
+        `Deterministic WebCodecs test: ${width}x${height}, ${fps} FPS, ${totalFrames} frames`
     );
 
     for (
@@ -105,6 +105,26 @@ export async function testWebCodecsExport({
     ) {
         if (encoderError) {
             throw encoderError;
+        }
+
+        const frameTime =
+            startTime +
+            frameIndex / fps;
+
+        /*
+         * Important:
+         * Render the project at this exact
+         * timeline position BEFORE capturing
+         * the VideoFrame.
+         */
+        if (
+            typeof renderFrame ===
+            "function"
+        ) {
+            await renderFrame({
+                frameIndex,
+                time: frameTime,
+            });
         }
 
         const timestamp =
@@ -128,10 +148,9 @@ export async function testWebCodecsExport({
         encoder.encode(
             frame,
             {
-                // Keyframe every 2 seconds.
                 keyFrame:
                     frameIndex %
-                        (fps * 2) ===
+                    (fps * 2) ===
                     0,
             }
         );
@@ -139,12 +158,13 @@ export async function testWebCodecsExport({
         frame.close();
 
         /*
-         * Don't let us dump hundreds of
-         * 1080p frames into the encoder
-         * faster than it can consume them.
+         * Give the encoder breathing room,
+         * but this does NOT change the
+         * timestamps in the finished video.
          */
-        if (
-            encoder.encodeQueueSize > 8
+        while (
+            encoder.encodeQueueSize >
+            8
         ) {
             await new Promise(
                 (resolve) => {
@@ -167,17 +187,12 @@ export async function testWebCodecsExport({
     encoder.close();
 
     console.log(
-        "WebCodecs test complete."
+        "Deterministic WebCodecs test complete."
     );
 
     console.log(
         "Encoded chunks:",
         chunks.length
-    );
-
-    console.log(
-        "First chunk:",
-        chunks[0]
     );
 
     return {
