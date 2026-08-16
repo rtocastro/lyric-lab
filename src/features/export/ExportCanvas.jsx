@@ -9,7 +9,6 @@ import getLyricAnimationState from "../preview/getLyricAnimationState";
 import renderExportFrame from "./renderExportFrame";
 import {
     exportWebCodecsVideo,
-    testWebCodecsExport,
 } from "./webCodecsExport";
 
 function ExportCanvas({
@@ -45,9 +44,6 @@ function ExportCanvas({
         useState(false);
 
     const [isExporting, setIsExporting] =
-        useState(false);
-
-    const [isWebCodecsTesting, setIsWebCodecsTesting] =
         useState(false);
 
     const [exportProgress, setExportProgress] =
@@ -836,8 +832,7 @@ function ExportCanvas({
 
             if (
                 isHighQualityExporting ||
-                isExporting ||
-                isWebCodecsTesting
+                isExporting
             ) {
                 return;
             }
@@ -1261,139 +1256,7 @@ function ExportCanvas({
             });
         };
 
-    const getWebCodecsTestWindow = () => {
-        const syncedLyric =
-            lyrics.find((lyric) => {
-                const start =
-                    Number(lyric.start);
 
-                const end =
-                    Number(lyric.end);
-
-                return (
-                    Number.isFinite(start) &&
-                    Number.isFinite(end) &&
-                    end > start
-                );
-            });
-
-        if (!syncedLyric) {
-            return {
-                startTime: 0,
-                seconds: 4,
-            };
-        }
-
-        const start =
-            Math.max(
-                Number(syncedLyric.start) -
-                0.5,
-                0
-            );
-
-        const end =
-            Number(syncedLyric.end) +
-            0.5;
-
-        return {
-            startTime: start,
-            seconds:
-                Math.max(
-                    end - start,
-                    1
-                ),
-        };
-    };
-
-    const handleWebCodecsTest =
-        async () => {
-            const canvas =
-                canvasRef.current;
-
-            if (!canvas) {
-                return;
-            }
-
-            try {
-                setIsWebCodecsTesting(
-                    true
-                );
-
-                /*
-                 * Important for deterministic
-                 * video-background testing.
-                 */
-                videoRef.current?.pause();
-
-                const {
-                    startTime,
-                    seconds,
-                } = getWebCodecsTestWindow();
-
-                console.log(
-                    "Testing lyric window:",
-                    {
-                        startTime,
-                        seconds,
-                    }
-                );
-
-                const result =
-                    await testWebCodecsExport({
-                        canvas,
-                        fps: 30,
-                        seconds,
-                        startTime,
-                        audioFile,
-                        renderFrame:
-                            renderDeterministicFrame,
-                    });
-
-                const downloadUrl =
-                    URL.createObjectURL(
-                        result.blob
-                    );
-
-                const link =
-                    document.createElement("a");
-
-                link.href =
-                    downloadUrl;
-
-                link.download =
-                    "lyric-lab-webcodecs-test.webm";
-
-                document.body.appendChild(
-                    link
-                );
-
-                link.click();
-
-                document.body.removeChild(
-                    link
-                );
-
-                setTimeout(() => {
-                    URL.revokeObjectURL(
-                        downloadUrl
-                    );
-                }, 1000);
-
-                console.log(
-                    "Deterministic WebCodecs result:",
-                    result
-                );
-            } catch (error) {
-                console.error(
-                    "Deterministic WebCodecs test failed:",
-                    error
-                );
-            } finally {
-                setIsWebCodecsTesting(
-                    false
-                );
-            }
-        };
 
     return (
         <>
@@ -1436,7 +1299,8 @@ function ExportCanvas({
                     handleFullExport
                 }
                 disabled={
-                    isExporting
+                    isExporting ||
+                    isHighQualityExporting
                 }
             >
                 {isExporting
@@ -1451,8 +1315,7 @@ function ExportCanvas({
                 }
                 disabled={
                     isHighQualityExporting ||
-                    isExporting ||
-                    isWebCodecsTesting
+                    isExporting 
                 }
             >
                 {isHighQualityExporting
@@ -1460,7 +1323,7 @@ function ExportCanvas({
                     : "Export High Quality"}
             </button>
 
-            <button
+            {/* <button
                 type="button"
                 onClick={
                     handleWebCodecsTest
@@ -1473,7 +1336,7 @@ function ExportCanvas({
                 {isWebCodecsTesting
                     ? "Testing WebCodecs..."
                     : "Test WebCodecs"}
-            </button>
+            </button> */}
 
             {isExporting && (
                 <div className="export-progress">
