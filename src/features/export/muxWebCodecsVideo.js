@@ -39,12 +39,107 @@ async function decodeAudioFile(
     }
 }
 
+function trimAudioBuffer({
+    audioBuffer,
+    startTime = 0,
+    duration = null,
+}) {
+    if (!audioBuffer) {
+        return null;
+    }
+
+    const sampleRate =
+        audioBuffer.sampleRate;
+
+    const safeStartTime =
+        Math.max(
+            Number.isFinite(startTime)
+                ? startTime
+                : 0,
+            0
+        );
+
+    const safeEndTime =
+        Number.isFinite(duration) &&
+        duration > 0
+            ? Math.min(
+                safeStartTime +
+                    duration,
+                audioBuffer.duration
+            )
+            : audioBuffer.duration;
+
+    const startFrame =
+        Math.floor(
+            safeStartTime *
+            sampleRate
+        );
+
+    const endFrame =
+        Math.min(
+            Math.ceil(
+                safeEndTime *
+                sampleRate
+            ),
+            audioBuffer.length
+        );
+
+    const frameCount =
+        Math.max(
+            endFrame -
+                startFrame,
+            0
+        );
+
+    if (frameCount === 0) {
+        return null;
+    }
+
+    const trimmedBuffer =
+        new AudioBuffer({
+            length: frameCount,
+            numberOfChannels:
+                audioBuffer.numberOfChannels,
+            sampleRate,
+        });
+
+    for (
+        let channel = 0;
+        channel <
+        audioBuffer.numberOfChannels;
+        channel += 1
+    ) {
+        const sourceData =
+            audioBuffer.getChannelData(
+                channel
+            );
+
+        const targetData =
+            trimmedBuffer.getChannelData(
+                channel
+            );
+
+        targetData.set(
+            sourceData.subarray(
+                startFrame,
+                endFrame
+            )
+        );
+    }
+
+    return trimmedBuffer;
+}
+
 async function muxWebCodecsVideo({
     chunks,
     width,
     height,
     codec = "vp09.00.10.08",
     audioFile = null,
+
+    // Project timeline window.
+    audioStartTime = 0,
+    audioDuration = null,
 }) {
     if (
         !Array.isArray(chunks) ||
@@ -79,14 +174,21 @@ async function muxWebCodecsVideo({
 
     /*
      * AUDIO
-     *
-     * Decode the original song rather
-     * than recording realtime playback.
      */
-    const audioBuffer =
+    const decodedAudio =
         await decodeAudioFile(
             audioFile
         );
+
+    const audioBuffer =
+        trimAudioBuffer({
+            audioBuffer:
+                decodedAudio,
+            startTime:
+                audioStartTime,
+            duration:
+                audioDuration,
+        });
 
     let audioSource = null;
 
@@ -104,12 +206,12 @@ async function muxWebCodecsVideo({
 
     /*
      * All tracks must be registered
-     * before Output starts.
+     * before output starts.
      */
     await output.start();
 
     /*
-     * Feed deterministic VP9 packets.
+     * VIDEO PACKETS
      */
     for (
         let index = 0;
@@ -162,8 +264,11 @@ async function muxWebCodecsVideo({
     videoSource.close();
 
     /*
-     * Feed the decoded song to the
-     * Opus encoder.
+     * AUDIO
+     *
+     * Because this is already a trimmed
+     * AudioBuffer, Mediabunny places its
+     * first sample at output time 0.
      */
     if (
         audioSource &&

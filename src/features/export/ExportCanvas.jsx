@@ -8,8 +8,8 @@ import drawCanvasLyric from "./drawCanvasLyric";
 import getLyricAnimationState from "../preview/getLyricAnimationState";
 import renderExportFrame from "./renderExportFrame";
 import {
+    exportWebCodecsVideo,
     testWebCodecsExport,
-
 } from "./webCodecsExport";
 
 function ExportCanvas({
@@ -35,6 +35,8 @@ function ExportCanvas({
     const imageRef = useRef(null);
     const videoRef = useRef(null);
     const currentTimeRef = useRef(currentTime);
+    const highQualityAbortRef =
+        useRef(null);
 
     const [backgroundVideoUrl, setBackgroundVideoUrl] =
         useState("");
@@ -49,6 +51,12 @@ function ExportCanvas({
         useState(false);
 
     const [exportProgress, setExportProgress] =
+        useState(0);
+
+    const [isHighQualityExporting, setIsHighQualityExporting] =
+        useState(false);
+
+    const [highQualityProgress, setHighQualityProgress] =
         useState(0);
 
     const currentVisuals = {
@@ -805,6 +813,166 @@ function ExportCanvas({
             }
         };
 
+
+    const handleHighQualityExport =
+        async () => {
+            const canvas =
+                canvasRef.current;
+
+            if (!canvas) {
+                return;
+            }
+
+            if (
+                !Number.isFinite(duration) ||
+                duration <= 0
+            ) {
+                console.error(
+                    "Cannot export without a valid project duration."
+                );
+
+                return;
+            }
+
+            if (
+                isHighQualityExporting ||
+                isExporting ||
+                isWebCodecsTesting
+            ) {
+                return;
+            }
+
+            const abortController =
+                new AbortController();
+
+            highQualityAbortRef.current =
+                abortController;
+
+            try {
+                setIsHighQualityExporting(
+                    true
+                );
+
+                setHighQualityProgress(
+                    0
+                );
+
+                /*
+                 * Stop realtime playback.
+                 * High-quality export supplies
+                 * its own deterministic clock.
+                 */
+                pauseAudio?.();
+
+                videoRef.current?.pause();
+
+                const result =
+                    await exportWebCodecsVideo({
+                        canvas,
+
+                        fps: 30,
+
+                        duration,
+
+                        startTime: 0,
+
+                        audioFile,
+
+                        renderFrame:
+                            renderDeterministicFrame,
+
+                        signal:
+                            abortController.signal,
+
+                        onProgress:
+                            (progress) => {
+                                setHighQualityProgress(
+                                    Math.round(
+                                        progress *
+                                        100
+                                    )
+                                );
+                            },
+                    });
+
+                if (
+                    abortController.signal
+                        .aborted
+                ) {
+                    return;
+                }
+
+                const downloadUrl =
+                    URL.createObjectURL(
+                        result.blob
+                    );
+
+                const link =
+                    document.createElement(
+                        "a"
+                    );
+
+                link.href =
+                    downloadUrl;
+
+                link.download =
+                    "lyric-lab-high-quality.webm";
+
+                document.body.appendChild(
+                    link
+                );
+
+                link.click();
+
+                document.body.removeChild(
+                    link
+                );
+
+                setTimeout(() => {
+                    URL.revokeObjectURL(
+                        downloadUrl
+                    );
+                }, 1000);
+
+                setHighQualityProgress(
+                    100
+                );
+
+                console.log(
+                    "High-quality export complete:",
+                    result
+                );
+            } catch (error) {
+                if (
+                    error?.name ===
+                    "AbortError"
+                ) {
+                    console.log(
+                        "High-quality export cancelled."
+                    );
+                } else {
+                    console.error(
+                        "High-quality export failed:",
+                        error
+                    );
+                }
+            } finally {
+                highQualityAbortRef.current =
+                    null;
+
+                setIsHighQualityExporting(
+                    false
+                );
+            }
+        };
+
+    const handleCancelHighQualityExport =
+        () => {
+            highQualityAbortRef.current
+                ?.abort();
+        };
+
+
     const renderDeterministicFrame =
         async ({ time }) => {
             const canvas =
@@ -1273,7 +1441,23 @@ function ExportCanvas({
             >
                 {isExporting
                     ? "Exporting Video..."
-                    : "Export Full Video"}
+                    : "Export Compatibility Version"}
+            </button>
+
+            <button
+                type="button"
+                onClick={
+                    handleHighQualityExport
+                }
+                disabled={
+                    isHighQualityExporting ||
+                    isExporting ||
+                    isWebCodecsTesting
+                }
+            >
+                {isHighQualityExporting
+                    ? "Rendering High Quality..."
+                    : "Export High Quality"}
             </button>
 
             <button
@@ -1309,6 +1493,39 @@ function ExportCanvas({
                             }}
                         />
                     </div>
+                </div>
+            )}
+
+            {isHighQualityExporting && (
+                <div className="export-progress">
+                    <div className="export-progress__label">
+                        <span>
+                            Rendering high-quality video
+                        </span>
+
+                        <strong>
+                            {highQualityProgress}%
+                        </strong>
+                    </div>
+
+                    <div className="export-progress__track">
+                        <div
+                            className="export-progress__fill"
+                            style={{
+                                width:
+                                    `${highQualityProgress}%`,
+                            }}
+                        />
+                    </div>
+
+                    <button
+                        type="button"
+                        onClick={
+                            handleCancelHighQualityExport
+                        }
+                    >
+                        Cancel Export
+                    </button>
                 </div>
             )}
         </>

@@ -1,17 +1,28 @@
 import muxWebCodecsVideo
     from "./muxWebCodecsVideo";
 
-export async function testWebCodecsExport({
+export async function exportWebCodecsVideo({
     canvas,
     fps = 30,
-    seconds = 4,
+    duration,
     startTime = 0,
     renderFrame,
     audioFile = null,
+    onProgress,
+    signal,
 }) {
     if (!canvas) {
         throw new Error(
-            "WebCodecs test needs a canvas."
+            "WebCodecs export needs a canvas."
+        );
+    }
+
+    if (
+        !Number.isFinite(duration) ||
+        duration <= 0
+    ) {
+        throw new Error(
+            "WebCodecs export needs a valid duration."
         );
     }
 
@@ -27,18 +38,25 @@ export async function testWebCodecsExport({
         );
     }
 
-    const width = canvas.width;
-    const height = canvas.height;
+    const width =
+        canvas.width;
 
-    const codec = "vp09.00.10.08";
+    const height =
+        canvas.height;
+
+    const codec =
+        "vp09.00.10.08";
 
     const config = {
         codec,
         width,
         height,
-        bitrate: 12_000_000,
-        framerate: fps,
-        latencyMode: "quality",
+        bitrate:
+            12_000_000,
+        framerate:
+            fps,
+        latencyMode:
+            "quality",
     };
 
     const support =
@@ -56,166 +74,282 @@ export async function testWebCodecsExport({
 
     let encoderError = null;
 
-    const encoder = new VideoEncoder({
-        output: (chunk, metadata) => {
-            const data =
-                new Uint8Array(
-                    chunk.byteLength
-                );
+    const encoder =
+        new VideoEncoder({
+            output:
+                (
+                    chunk,
+                    metadata
+                ) => {
+                    const data =
+                        new Uint8Array(
+                            chunk.byteLength
+                        );
 
-            chunk.copyTo(data);
+                    chunk.copyTo(
+                        data
+                    );
 
-            chunks.push({
-                type: chunk.type,
-                timestamp:
-                    chunk.timestamp,
-                duration:
-                    chunk.duration,
-                data,
-                metadata,
-            });
-        },
+                    chunks.push({
+                        type:
+                            chunk.type,
 
-        error: (error) => {
-            console.error(
-                "WebCodecs encoder error:",
-                error
-            );
+                        timestamp:
+                            chunk.timestamp,
 
-            encoderError = error;
-        },
-    });
+                        duration:
+                            chunk.duration,
+
+                        data,
+
+                        metadata,
+                    });
+                },
+
+            error:
+                (error) => {
+                    console.error(
+                        "WebCodecs encoder error:",
+                        error
+                    );
+
+                    encoderError =
+                        error;
+                },
+        });
 
     encoder.configure(
         support.config
     );
 
     const totalFrames =
-        Math.round(
-            seconds * fps
+        Math.ceil(
+            duration *
+            fps
         );
 
     const frameDuration =
-        1_000_000 / fps;
+        1_000_000 /
+        fps;
 
     console.log(
-        `Deterministic WebCodecs test: ${width}x${height}, ${fps} FPS, ${totalFrames} frames`
+        `WebCodecs export starting: ${width}x${height}, ${fps} FPS, ${totalFrames} frames`
     );
 
-    for (
-        let frameIndex = 0;
-        frameIndex < totalFrames;
-        frameIndex += 1
-    ) {
+    try {
+        for (
+            let frameIndex = 0;
+            frameIndex <
+            totalFrames;
+            frameIndex += 1
+        ) {
+            if (
+                signal?.aborted
+            ) {
+                throw new DOMException(
+                    "Export cancelled.",
+                    "AbortError"
+                );
+            }
+
+            if (encoderError) {
+                throw encoderError;
+            }
+
+            const frameTime =
+                startTime +
+                frameIndex /
+                fps;
+
+            if (
+                typeof renderFrame ===
+                "function"
+            ) {
+                await renderFrame({
+                    frameIndex,
+                    time:
+                        frameTime,
+                });
+            }
+
+            const timestamp =
+                Math.round(
+                    frameIndex *
+                    frameDuration
+                );
+
+            const frame =
+                new VideoFrame(
+                    canvas,
+                    {
+                        timestamp,
+
+                        duration:
+                            Math.round(
+                                frameDuration
+                            ),
+                    }
+                );
+
+            encoder.encode(
+                frame,
+                {
+                    keyFrame:
+                        frameIndex %
+                            (
+                                fps *
+                                2
+                            ) ===
+                        0,
+                }
+            );
+
+            frame.close();
+
+            /*
+             * Backpressure.
+             *
+             * Export may run slower than
+             * realtime, but output timing
+             * remains exact.
+             */
+            while (
+                encoder.encodeQueueSize >
+                8
+            ) {
+                if (
+                    signal?.aborted
+                ) {
+                    throw new DOMException(
+                        "Export cancelled.",
+                        "AbortError"
+                    );
+                }
+
+                await new Promise(
+                    (
+                        resolve
+                    ) => {
+                        setTimeout(
+                            resolve,
+                            0
+                        );
+                    }
+                );
+            }
+
+            if (
+                typeof onProgress ===
+                "function"
+            ) {
+                const progress =
+                    (
+                        frameIndex +
+                        1
+                    ) /
+                    totalFrames;
+
+                onProgress(
+                    progress
+                );
+            }
+        }
+
+        await encoder.flush();
+
         if (encoderError) {
             throw encoderError;
         }
 
-        const frameTime =
-            startTime +
-            frameIndex / fps;
+        if (
+            signal?.aborted
+        ) {
+            throw new DOMException(
+                "Export cancelled.",
+                "AbortError"
+            );
+        }
 
         /*
-         * Important:
-         * Render the project at this exact
-         * timeline position BEFORE capturing
-         * the VideoFrame.
+         * The deterministic video is
+         * finished. Now mux the matching
+         * section of the original audio.
          */
+        const blob =
+            await muxWebCodecsVideo({
+                chunks,
+                codec,
+                width,
+                height,
+                audioFile,
+
+                audioStartTime:
+                    startTime,
+
+                audioDuration:
+                    duration,
+            });
+
         if (
-            typeof renderFrame ===
+            typeof onProgress ===
             "function"
         ) {
-            await renderFrame({
-                frameIndex,
-                time: frameTime,
-            });
+            onProgress(1);
         }
 
-        const timestamp =
-            Math.round(
-                frameIndex *
-                frameDuration
-            );
-
-        const frame =
-            new VideoFrame(
-                canvas,
-                {
-                    timestamp,
-                    duration:
-                        Math.round(
-                            frameDuration
-                        ),
-                }
-            );
-
-        encoder.encode(
-            frame,
-            {
-                keyFrame:
-                    frameIndex %
-                    (fps * 2) ===
-                    0,
-            }
+        console.log(
+            "WebCodecs export complete."
         );
 
-        frame.close();
+        console.log(
+            "Encoded frames:",
+            chunks.length
+        );
 
-        /*
-         * Give the encoder breathing room,
-         * but this does NOT change the
-         * timestamps in the finished video.
-         */
-        while (
-            encoder.encodeQueueSize >
-            8
-        ) {
-            await new Promise(
-                (resolve) => {
-                    setTimeout(
-                        resolve,
-                        0
-                    );
-                }
-            );
-        }
-    }
-
-    await encoder.flush();
-
-    if (encoderError) {
-        encoder.close();
-        throw encoderError;
-    }
-
-    const blob =
-        await muxWebCodecsVideo({
-            chunks,
+        return {
+            blob,
             codec,
             width,
             height,
-            audioFile,
-        });
+            fps,
+            duration,
+            startTime,
+            totalFrames,
+        };
+    } finally {
+        if (
+            encoder.state !==
+            "closed"
+        ) {
+            encoder.close();
+        }
+    }
+}
 
-    encoder.close();
-
-    console.log(
-        "Deterministic WebCodecs test complete."
-    );
-
-    console.log(
-        "Encoded chunks:",
-        chunks.length
-    );
-
-    return {
-        chunks,
-        blob,
-        codec,
-        width,
-        height,
+/*
+ * Keep our known-good short test,
+ * but run it through the same engine
+ * that production export uses.
+ */
+export async function testWebCodecsExport({
+    canvas,
+    fps = 30,
+    seconds = 4,
+    startTime = 0,
+    renderFrame,
+    audioFile = null,
+    onProgress,
+    signal,
+}) {
+    return exportWebCodecsVideo({
+        canvas,
         fps,
-        seconds,
-        totalFrames,
-    };
+        duration:
+            seconds,
+        startTime,
+        renderFrame,
+        audioFile,
+        onProgress,
+        signal,
+    });
 }
