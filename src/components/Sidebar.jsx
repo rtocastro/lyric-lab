@@ -5,24 +5,14 @@ const sidebarItems = [
         label: "Project",
     },
     {
-        id: "audio",
-        icon: "♪",
-        label: "Audio",
-    },
-    {
         id: "lyrics",
         icon: "T",
         label: "Lyrics",
     },
     {
-        id: "timeline",
-        icon: "⌁",
-        label: "Timeline",
-    },
-    {
         id: "style",
-        label: "Style",
         icon: "✎",
+        label: "Style",
     },
     {
         id: "animation",
@@ -33,16 +23,6 @@ const sidebarItems = [
         id: "visuals",
         icon: "◉",
         label: "Visuals",
-    },
-    {
-        id: "effects",
-        icon: "✦",
-        label: "Effects",
-    },
-    {
-        id: "assets",
-        icon: "▦",
-        label: "Assets",
     },
 ];
 
