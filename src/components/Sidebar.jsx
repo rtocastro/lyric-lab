@@ -10,6 +10,11 @@ const sidebarItems = [
         label: "Lyrics",
     },
     {
+        id: "audio",
+        icon: "♪",
+        label: "Audio",
+    },
+    {
         id: "style",
         icon: "✎",
         label: "Style",
