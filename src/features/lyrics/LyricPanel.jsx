@@ -457,6 +457,26 @@ Never gonna run around and desert you`}
               })}
             </div>
 
+            <div className="lyric-mobile-now">
+              <span className="lyric-mobile-now__label">
+                Next lyric
+              </span>
+
+              <strong className="lyric-mobile-now__current">
+                {activeLyricIndex === -1
+                  ? "All lyrics synced"
+                  : lyrics[activeLyricIndex]?.text}
+              </strong>
+
+              {activeLyricIndex !== -1 &&
+                lyrics[activeLyricIndex + 1] && (
+                  <span className="lyric-mobile-now__next">
+                    Up next:{" "}
+                    {lyrics[activeLyricIndex + 1].text}
+                  </span>
+                )}
+            </div>
+
             <button
               className="lyric-mobile-sync"
               type="button"
