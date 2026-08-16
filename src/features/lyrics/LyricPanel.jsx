@@ -49,6 +49,52 @@ function LyricPanel({
     });
   }, [activeLyricIndex]);
 
+  const handleMarkLyric = () => {
+    if (lyrics.length === 0) {
+      return;
+    }
+
+    if (!hasAudio) {
+      setErrorMessage(
+        "Import an audio file before synchronizing lyrics."
+      );
+      return;
+    }
+
+    if (activeLyricIndex === -1) {
+      setErrorMessage(
+        "Every lyric line is already synchronized."
+      );
+      return;
+    }
+
+    const nextLyrics = lyrics.map(
+      (lyric, index) => {
+        if (index === activeLyricIndex) {
+          return {
+            ...lyric,
+            start: currentTime,
+          };
+        }
+
+        if (
+          index === activeLyricIndex - 1 &&
+          lyric.end === null
+        ) {
+          return {
+            ...lyric,
+            end: currentTime,
+          };
+        }
+
+        return lyric;
+      }
+    );
+
+    onLyricsChange(nextLyrics);
+    setErrorMessage("");
+  };
+
   useEffect(() => {
     const handleKeyDown = (event) => {
       const target = event.target;
@@ -68,6 +114,7 @@ function LyricPanel({
       }
 
       event.preventDefault();
+      handleMarkLyric();
 
       if (!hasAudio) {
         setErrorMessage(
@@ -239,10 +286,9 @@ function LyricPanel({
                 setLyricDraft(event.target.value);
                 setErrorMessage("");
               }}
-              placeholder={`The time has come
-To get the fuck up
-I won't remain
-Buried beneath this`}
+              placeholder={`Never gonna give you up
+Never gonna let you down
+Never gonna run around and desert you`}
               spellCheck="true"
             />
 
@@ -357,9 +403,9 @@ Buried beneath this`}
                     width:
                       duration > 0
                         ? `${Math.min(
-                            (currentTime / duration) * 100,
-                            100
-                          )}%`
+                          (currentTime / duration) * 100,
+                          100
+                        )}%`
                         : "0%",
                   }}
                 />
@@ -410,6 +456,20 @@ Buried beneath this`}
                 );
               })}
             </div>
+
+            <button
+              className="lyric-mobile-sync"
+              type="button"
+              onClick={handleMarkLyric}
+              disabled={
+                !hasAudio ||
+                activeLyricIndex === -1
+              }
+            >
+              {activeLyricIndex === -1
+                ? "All Lyrics Synced"
+                : `Mark Line ${activeLyricIndex + 1}`}
+            </button>
 
             <div className="lyric-workspace__hint">
               <span className="lyric-workspace__key">
