@@ -2651,8 +2651,7 @@ button {
   pointer-events: none;
 }
 
-.lyric-timeline__clip--primary
-  .lyric-timeline__animation-badge {
+.lyric-timeline__clip--primary .lyric-timeline__animation-badge {
   right: 11px;
 }
 
@@ -2744,13 +2743,13 @@ button {
   justify-content: space-between;
 }
 
-.visuals-panel__heading > span {
+.visuals-panel__heading>span {
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 
-.visuals-panel__heading > strong {
+.visuals-panel__heading>strong {
   color: var(--accent);
   font-size: 0.68rem;
   text-transform: uppercase;
@@ -2866,7 +2865,7 @@ button {
   justify-content: space-between;
 }
 
-.export-panel__header > div {
+.export-panel__header>div {
   display: grid;
   gap: 4px;
 }
@@ -2935,7 +2934,7 @@ button {
   .sidebar__navigation {
     display: grid;
     height: 100%;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(6, 1fr);
     gap: 0;
     padding: 5px 6px;
   }
@@ -2979,9 +2978,7 @@ button {
     overflow-y: auto;
 
     padding:
-      10px
-      10px
-      calc(var(--mobile-nav-height) + 14px);
+      10px 10px calc(var(--mobile-nav-height) + 14px);
 
     overscroll-behavior: contain;
   }
@@ -3141,13 +3138,13 @@ button {
     overflow: visible;
   }
 
-  .editor-grid__main > .panel {
+  .editor-grid__main>.panel {
     height: auto;
     min-height: 0;
     overflow: visible;
   }
 
-  .editor-grid__main > .panel > .panel__content {
+  .editor-grid__main>.panel>.panel__content {
     height: auto;
     min-height: 0;
     overflow: visible;
@@ -3193,6 +3190,7 @@ button {
    ======================================== */
 
 @media (max-width: 650px) {
+
   html,
   body,
   #root,
@@ -3230,9 +3228,7 @@ button {
     overscroll-behavior-y: contain;
 
     padding:
-      10px
-      10px
-      calc(var(--mobile-nav-height, 64px) + 20px);
+      10px 10px calc(var(--mobile-nav-height, 64px) + 20px);
   }
 
   /*
@@ -3251,13 +3247,13 @@ button {
     overflow: visible;
   }
 
-  .editor-grid__main > .panel {
+  .editor-grid__main>.panel {
     height: auto;
     min-height: 0;
     overflow: visible;
   }
 
-  .editor-grid__main > .panel > .panel__content {
+  .editor-grid__main>.panel>.panel__content {
     display: block;
     height: auto;
     min-height: 0;
@@ -3308,5 +3304,15 @@ button {
     min-height: 0;
     overflow: visible;
     margin-top: 12px;
+  }
+}
+
+@media (max-width: 650px) {
+  .sidebar__item span:last-child {
+    font-size: 0.56rem;
+  }
+
+  .sidebar__icon {
+    font-size: 0.82rem;
   }
 }
