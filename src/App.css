@@ -3116,3 +3116,197 @@ button {
     display: none;
   }
 }
+
+/* ========================================
+   Mobile panel scrolling / content access
+   ======================================== */
+
+@media (max-width: 650px) {
+
+  /*
+   * Desktop uses fixed-height panels with
+   * hidden overflow.
+   *
+   * On mobile, let the page grow naturally
+   * so every control can be reached.
+   */
+  .editor-grid {
+    height: auto;
+    min-height: 0;
+  }
+
+  .editor-grid__main {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .editor-grid__main > .panel {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .editor-grid__main > .panel > .panel__content {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  /*
+   * Lyrics
+   */
+  .lyric-panel,
+  .lyric-workspace {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .lyric-import {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .lyric-import__textarea {
+    min-height: 220px;
+    max-height: none;
+  }
+
+  /*
+   * Style / Animation / Visual controls
+   * should grow instead of getting clipped.
+   */
+  .style-panel,
+  .animation-panel,
+  .visuals-panel {
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+}
+
+/* ========================================
+   FINAL MOBILE SCROLL OVERRIDES
+   Keep this at the very bottom of App.css
+   ======================================== */
+
+@media (max-width: 650px) {
+  html,
+  body,
+  #root,
+  .app {
+    height: 100%;
+  }
+
+  body {
+    overflow: hidden;
+  }
+
+  .editor {
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .editor__body {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /*
+   * THIS becomes the main mobile
+   * scrolling container.
+   */
+  .editor__workspace {
+    height: 100%;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+
+    padding:
+      10px
+      10px
+      calc(var(--mobile-nav-height, 64px) + 20px);
+  }
+
+  /*
+   * Stop the desktop grid from
+   * constraining content vertically.
+   */
+  .editor-grid {
+    display: block;
+    height: auto;
+    min-height: 0;
+  }
+
+  .editor-grid__main {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .editor-grid__main > .panel {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .editor-grid__main > .panel > .panel__content {
+    display: block;
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  /*
+   * Let the lyric import card grow
+   * past the textarea naturally.
+   */
+  .lyric-panel,
+  .lyric-import,
+  .lyric-workspace {
+    display: flex;
+    height: auto;
+    min-height: 0;
+    flex-direction: column;
+    overflow: visible;
+  }
+
+  /*
+   * Desktop gives this flex: 1,
+   * which makes it consume the available
+   * panel height instead of flowing.
+   */
+  .lyric-import__textarea {
+    flex: none;
+    width: 100%;
+    min-height: 220px;
+    height: 220px;
+    resize: vertical;
+  }
+
+  .lyric-import__footer {
+    flex: none;
+    width: 100%;
+    margin-top: 14px;
+  }
+
+  /*
+   * Project Settings + Timeline follow
+   * the main panel instead of participating
+   * in the desktop fixed-height grid.
+   */
+  .editor-grid__inspector,
+  .editor-grid__timeline {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+    margin-top: 12px;
+  }
+}
